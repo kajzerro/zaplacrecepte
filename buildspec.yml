@@ -10,7 +10,7 @@ phases:
       - mvn package
   post_build:
     commands:
-      - mv target/zaplacrecepte-0.0.1.jar ../
+      - cp target/zaplacrecepte-0.0.1.jar ../
       - echo Build completed on `date`
 artifacts:
   files:
