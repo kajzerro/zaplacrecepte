@@ -26,6 +26,7 @@ public class PrescriptionEntity {
     private String remarks;
     private String phoneNumber;
     private String email;
+    private String status;
 
 
     @DynamoDBHashKey
@@ -71,4 +72,10 @@ public class PrescriptionEntity {
     public String getEmail() {
         return email;
     }
+
+    @DynamoDBAttribute
+    public String getStatus() {
+        return status;
+    }
+
 }

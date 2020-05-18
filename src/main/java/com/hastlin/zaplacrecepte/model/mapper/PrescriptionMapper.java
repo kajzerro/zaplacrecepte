@@ -18,6 +18,7 @@ public class PrescriptionMapper {
                 .postalCode(prescriptionDTO.getPostalCode())
                 .email(prescriptionDTO.getEmail())
                 .phoneNumber(prescriptionDTO.getPhoneNumber())
+                .status(prescriptionDTO.getStatus())
                 .build();
     }
 
@@ -31,6 +32,7 @@ public class PrescriptionMapper {
                 .postalCode(prescriptionEntity.getPostalCode())
                 .email(prescriptionEntity.getEmail())
                 .phoneNumber(prescriptionEntity.getPhoneNumber())
+                .status(prescriptionEntity.getStatus())
                 .build();
     }
 }

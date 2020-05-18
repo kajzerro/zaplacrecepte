@@ -16,7 +16,7 @@ import java.util.List;
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = ZaplacrecepteApplication.class)
 @WebAppConfiguration
-public class ProductInfoRepositoryTest {
+public class PrescriptionRepositoryTest {
 
     private DynamoDBMapper dynamoDBMapper;
 
@@ -35,9 +35,9 @@ public class ProductInfoRepositoryTest {
 
     @Test
     public void should_get_all_records() {
-        PrescriptionEntity prescriptionEntity = PrescriptionEntity.builder().email("osa@osa.pl").phoneNumber("80768493").lastName("OSA").build();
+        PrescriptionEntity prescriptionEntity = PrescriptionEntity.builder().email("osa@osa.pl").status("done").phoneNumber("80768493").lastName("OSA").build();
         repository.save(prescriptionEntity);
-        PrescriptionEntity prescriptionEntity2 = PrescriptionEntity.builder().remarks("Przedłużenie recepty").email("osa@osa.pl").phoneNumber("80768493").lastName("OSA").build();
+        PrescriptionEntity prescriptionEntity2 = PrescriptionEntity.builder().remarks("Przedłużenie recepty").status("paid").email("osa@osa.pl").phoneNumber("80768493").lastName("OSA").build();
         repository.save(prescriptionEntity2);
         List<PrescriptionEntity> result = (List<PrescriptionEntity>) repository.findAll();
         System.out.println(result);
