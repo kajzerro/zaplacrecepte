@@ -14,4 +14,8 @@ public class PrescriptionService {
     public void createNewPrescription(PrescriptionEntity prescriptionEntity) {
         this.prescriptionRepository.save(prescriptionEntity);
     }
+
+    public Iterable<PrescriptionEntity> getAllPrescriptions() {
+        return this.prescriptionRepository.findAll();
+    }
 }

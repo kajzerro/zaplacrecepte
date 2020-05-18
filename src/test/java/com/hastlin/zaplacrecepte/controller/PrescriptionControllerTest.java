@@ -20,6 +20,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -41,7 +42,7 @@ public class PrescriptionControllerTest {
     @Test
     public void should_save_entity_and_get_200OK_when_everything_ok() throws Exception {
         this.mockMvc.perform(
-                post("/prescription")
+                post("/api/prescriptions")
                         .content(Files.readAllBytes(prescriptionJson.getFile().toPath()))
                         .characterEncoding(StandardCharsets.UTF_8.toString())
                         .contentType(MediaType.APPLICATION_JSON)
@@ -52,6 +53,19 @@ public class PrescriptionControllerTest {
 
         verify(prescriptionRepository, times(1)).save(any());
 
+    }
+
+    @Test
+    public void should_answer_with_all_prescriptions() throws Exception {
+        this.mockMvc.perform(
+                get("/api/prescriptions")
+                        .characterEncoding(StandardCharsets.UTF_8.toString())
+                        .accept(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andReturn().getResponse();
+
+        verify(prescriptionRepository, times(1)).findAll();
     }
 
 
