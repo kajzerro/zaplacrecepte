@@ -9,6 +9,9 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class PrescriptionMapper {
+
+    public static final String STATUS_UNPAID = "unpaid";
+
     public PrescriptionEntity toEntity(PrescriptionDTO prescriptionDTO) {
         return PrescriptionEntity.builder()
                 .firstName(prescriptionDTO.getFirstName())
@@ -18,7 +21,7 @@ public class PrescriptionMapper {
                 .postalCode(prescriptionDTO.getPostalCode())
                 .email(prescriptionDTO.getEmail())
                 .phoneNumber(prescriptionDTO.getPhoneNumber())
-                .status(prescriptionDTO.getStatus())
+                .status(STATUS_UNPAID)
                 .build();
     }
 
