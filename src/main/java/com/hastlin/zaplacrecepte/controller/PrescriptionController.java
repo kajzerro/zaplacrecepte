@@ -32,8 +32,14 @@ public class PrescriptionController {
     }
 
     @GetMapping
-    List<PrescriptionDTO> createPrescription(){
+    List<PrescriptionDTO> getAllPrescriptions() {
         return StreamSupport.stream(this.prescriptionService.getAllPrescriptions().spliterator(), false).map(this.prescriptionMapper::toDto).collect(Collectors.toList());
+    }
+
+    @PatchMapping(path = "/{id}")
+    public ResponseEntity patchPrescription(@PathVariable String id, @RequestBody PrescriptionDTO prescriptionDTO) {
+        this.prescriptionService.patchPrescription(id, this.prescriptionMapper.toEntity(prescriptionDTO));
+        return ResponseEntity.ok("OK");
     }
 
 }
