@@ -24,7 +24,7 @@ public class PrescriptionService {
         return this.prescriptionRepository.findAll();
     }
 
-    public void patchPrescription(String id, PrescriptionEntity patchedPrescriptionEntity) {
+    public void updatePrescription(String id, PrescriptionEntity updateEntity) {
         Optional<PrescriptionEntity> optionalPrescriptionEntity = this.prescriptionRepository.findById(id);
 
         if (!optionalPrescriptionEntity.isPresent()) {
@@ -32,7 +32,14 @@ public class PrescriptionService {
         }
 
         PrescriptionEntity prescriptionEntity = optionalPrescriptionEntity.get();
-        prescriptionEntity.setStatus(patchedPrescriptionEntity.getStatus());
+        prescriptionEntity.setFirstName(updateEntity.getFirstName());
+        prescriptionEntity.setLastName(updateEntity.getLastName());
+        prescriptionEntity.setPesel(updateEntity.getPesel());
+        prescriptionEntity.setPostalCode(updateEntity.getPostalCode());
+        prescriptionEntity.setRemarks(updateEntity.getRemarks());
+        prescriptionEntity.setPhoneNumber(updateEntity.getPhoneNumber());
+        prescriptionEntity.setEmail(updateEntity.getEmail());
+        prescriptionEntity.setStatus(updateEntity.getStatus());
         prescriptionRepository.save(prescriptionEntity);
     }
 }
