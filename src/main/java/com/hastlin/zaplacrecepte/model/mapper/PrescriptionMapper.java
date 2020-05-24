@@ -34,6 +34,7 @@ public class PrescriptionMapper {
                 .email(prescriptionEntity.getEmail())
                 .phoneNumber(prescriptionEntity.getPhoneNumber())
                 .status(prescriptionEntity.getStatus())
+                .createDateTime(prescriptionEntity.getCreateDateTime())
                 .build();
     }
 }

@@ -27,6 +27,7 @@ public class PrescriptionEntity {
     private String phoneNumber;
     private String email;
     private String status;
+    private String createDateTime;
 
 
     @DynamoDBHashKey
@@ -78,4 +79,8 @@ public class PrescriptionEntity {
         return status;
     }
 
+    @DynamoDBAttribute
+    public String getCreateDateTime() {
+        return createDateTime;
+    }
 }

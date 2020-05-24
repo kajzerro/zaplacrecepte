@@ -5,6 +5,10 @@ import com.hastlin.zaplacrecepte.repository.PrescriptionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 
 @Service
@@ -17,7 +21,14 @@ public class PrescriptionService {
 
     public void createNewPrescription(PrescriptionEntity prescriptionEntity) {
         prescriptionEntity.setStatus(STATUS_UNPAID);
+        prescriptionEntity.setCreateDateTime(actualDateTime());
         this.prescriptionRepository.save(prescriptionEntity);
+    }
+
+    String actualDateTime() {
+        LocalDateTime localDateTime = LocalDateTime.now();
+        ZonedDateTime zonedDateTime = ZonedDateTime.of(localDateTime, ZoneId.of("Europe/Warsaw"));
+        return zonedDateTime.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
     }
 
     public Iterable<PrescriptionEntity> getAllPrescriptions() {

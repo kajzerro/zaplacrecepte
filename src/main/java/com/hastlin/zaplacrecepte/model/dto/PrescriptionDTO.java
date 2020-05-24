@@ -20,4 +20,5 @@ public class PrescriptionDTO {
     private String phoneNumber;
     private String email;
     private String status;
+    private String createDateTime;
 }
