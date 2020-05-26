@@ -2,8 +2,8 @@ package com.hastlin.zaplacrecepte.service;
 
 import com.hastlin.zaplacrecepte.model.entity.PrescriptionEntity;
 import com.hastlin.zaplacrecepte.repository.PrescriptionRepository;
-import com.hastlin.zaplacrecepte.service.payu.CreatePaymentService;
 import com.hastlin.zaplacrecepte.service.payu.Payment;
+import com.hastlin.zaplacrecepte.service.payu.PaymentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -22,14 +22,14 @@ public class PrescriptionService {
     private PrescriptionRepository prescriptionRepository;
 
     @Autowired
-    private CreatePaymentService createPaymentService;
+    private PaymentService paymentService;
 
     public void createNewPrescription(PrescriptionEntity prescriptionEntity, String clientIp) {
         prescriptionEntity.setStatus(STATUS_NEW);
         prescriptionEntity.setCreateDateTime(actualDateTime());
         this.prescriptionRepository.save(prescriptionEntity);
 
-        Payment payment = createPaymentService.createPayment(clientIp);
+        Payment payment = paymentService.createPayment(clientIp);
         prescriptionEntity.setOrderId(payment.getOrderId());
         prescriptionEntity.setPaymentToken(payment.getPaymentToken());
         prescriptionEntity.setOrderRedirectToUrl(payment.getOrderRedirectToUrl());
@@ -54,7 +54,13 @@ public class PrescriptionService {
             throw new RuntimeException("Prescription not found");
         }
 
+
         PrescriptionEntity prescriptionEntity = optionalPrescriptionEntity.get();
+        if (updateEntity.getStatus().equals("COMPLETED")) {
+            paymentService.acceptPayment(prescriptionEntity.getOrderId());
+        } else if (updateEntity.getStatus().equals("CANCELED")) {
+            paymentService.cancelPayment(prescriptionEntity.getOrderId());
+        }
         prescriptionEntity.setFirstName(updateEntity.getFirstName());
         prescriptionEntity.setLastName(updateEntity.getLastName());
         prescriptionEntity.setPesel(updateEntity.getPesel());

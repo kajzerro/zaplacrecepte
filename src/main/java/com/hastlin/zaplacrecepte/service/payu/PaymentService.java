@@ -1,9 +1,7 @@
 package com.hastlin.zaplacrecepte.service.payu;
 
-import com.hastlin.zaplacrecepte.model.dto.payu.PayuAuthorizeResponseDto;
-import com.hastlin.zaplacrecepte.model.dto.payu.PayuOrderRequestDto;
-import com.hastlin.zaplacrecepte.model.dto.payu.PayuOrderResponseDto;
-import com.hastlin.zaplacrecepte.model.dto.payu.PayuProductDto;
+import com.hastlin.zaplacrecepte.model.dto.payu.*;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -12,7 +10,8 @@ import java.util.Collections;
 import java.util.UUID;
 
 @Service
-public class CreatePaymentService {
+@Slf4j
+public class PaymentService {
 
     private static final String PAYMENT_HOST = "https://secure.snd.payu.com";
     private static final String CLIENT_ID = "386506";
@@ -41,11 +40,32 @@ public class CreatePaymentService {
 
         ResponseEntity<PayuOrderResponseDto> payuOrderResponseDtoResponseEntity = restTemplate.exchange(PAYMENT_HOST + "/api/v2_1/orders", HttpMethod.POST, payuOrderRequest, PayuOrderResponseDto.class);
         PayuOrderResponseDto payuOrderResponseDto = payuOrderResponseDtoResponseEntity.getBody();
+        log.info("Created payment with orderId {}", payuOrderResponseDto.getOrderId());
         return Payment.builder()
                 .orderId(payuOrderResponseDto.getOrderId())
                 .paymentToken(paymentToken)
                 .orderRedirectToUrl(payuOrderResponseDto.getRedirectUri())
                 .orderRedirectFromKey(createRedirectKey()).build();
+    }
+
+    public void cancelPayment(String orderId) {
+        RestTemplate restTemplate = new RestTemplate();
+        ResponseEntity<PayuAuthorizeResponseDto> response = authorize(restTemplate);
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(response.getBody().getAccess_token());
+        HttpEntity<Void> cancelRequest = new HttpEntity<>(headers);
+        ResponseEntity<PayuResponseDto> responseDto = restTemplate.exchange(PAYMENT_HOST + "/api/v2_1/orders/" + orderId, HttpMethod.DELETE, cancelRequest, PayuResponseDto.class);
+        log.info("Cancelled payment with orderId {} with response {}", orderId, responseDto.getBody().getStatus().getStatusCode());
+    }
+
+    public void acceptPayment(String orderId) {
+        RestTemplate restTemplate = new RestTemplate();
+        ResponseEntity<PayuAuthorizeResponseDto> response = authorize(restTemplate);
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(response.getBody().getAccess_token());
+        HttpEntity<PayuAcceptOrderDto> acceptRequest = new HttpEntity<>(PayuAcceptOrderDto.builder().orderId(orderId).orderStatus("COMPLETED").build(), headers);
+        ResponseEntity<PayuResponseDto> responseDto = restTemplate.exchange(PAYMENT_HOST + "/api/v2_1/orders/" + orderId + "/status", HttpMethod.PUT, acceptRequest, PayuResponseDto.class);
+        log.info("Accepted payment with orderId {} with response {}", orderId, responseDto.getBody().getStatus().getStatusCode());
     }
 
     private String createRedirectKey() {

@@ -7,7 +7,6 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode
-public class PayuStatusDto {
-    private String statusCode;
-    private String statusDesc;
+public class PayuResponseDto {
+    private PayuStatusDto status;
 }
