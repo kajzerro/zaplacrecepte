@@ -10,4 +10,8 @@ import java.util.Optional;
 public interface PrescriptionRepository extends CrudRepository<PrescriptionEntity, String> {
 
     Optional<PrescriptionEntity> findById(String id);
+
+    Optional<PrescriptionEntity> findByPaymentTokenAndOrderId(String paymentToken, String orderId);
+
+    Optional<PrescriptionEntity> findByOrderRedirectFromKey(String orderRedirectFromKey);
 }
