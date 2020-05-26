@@ -3,11 +3,13 @@ package com.hastlin.zaplacrecepte.controller;
 import com.hastlin.zaplacrecepte.model.dto.PrescriptionDTO;
 import com.hastlin.zaplacrecepte.model.mapper.PrescriptionMapper;
 import com.hastlin.zaplacrecepte.service.PrescriptionService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.Valid;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -17,6 +19,7 @@ import java.util.stream.StreamSupport;
  */
 @RestController
 @RequestMapping("/api/prescriptions")
+@Slf4j
 public class PrescriptionController {
 
     @Autowired
@@ -27,7 +30,7 @@ public class PrescriptionController {
 
     @PostMapping
     ResponseEntity createPrescription(@RequestBody PrescriptionDTO prescriptionDTO, HttpServletRequest request) {
-        System.out.print("Got a request " + prescriptionDTO);
+        log.info("Got a request {}", prescriptionDTO);
         this.prescriptionService.createNewPrescription(prescriptionMapper.toEntity(prescriptionDTO), request.getRemoteAddr());
         return ResponseEntity.ok("OK");
     }

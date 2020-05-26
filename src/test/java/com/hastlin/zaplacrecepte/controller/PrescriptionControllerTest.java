@@ -1,6 +1,7 @@
 package com.hastlin.zaplacrecepte.controller;
 
 import com.hastlin.zaplacrecepte.repository.PrescriptionRepository;
+import com.hastlin.zaplacrecepte.service.EmailService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,8 +18,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -35,12 +35,15 @@ public class PrescriptionControllerTest {
     @MockBean
     PrescriptionRepository prescriptionRepository;
 
+    @MockBean
+    EmailService emailService;
+
     @Autowired
     private MockMvc mockMvc;
 
-
     @Test
     public void should_save_entity_and_get_200OK_when_everything_ok() throws Exception {
+        doNothing().when(emailService).sendSimpleMessage(any(), any(), any());
         this.mockMvc.perform(
                 post("/api/prescriptions")
                         .content(Files.readAllBytes(prescriptionJson.getFile().toPath()))
@@ -67,6 +70,5 @@ public class PrescriptionControllerTest {
 
         verify(prescriptionRepository, times(1)).findAll();
     }
-
 
 }

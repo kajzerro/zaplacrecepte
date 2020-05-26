@@ -7,6 +7,7 @@ import com.hastlin.zaplacrecepte.service.payu.PaymentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.mail.MessagingException;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -17,12 +18,23 @@ import java.util.Optional;
 public class PrescriptionService {
 
     private static final String STATUS_NEW = "NEW";
+    private static final String STATUS_UNPAID = "unpaid";
+    private static final String MAIL_SUBJECT = "RECEPTA";
+    private static final String MAIL_TEXT = "Dr Marek Krzystyniak prosi o opłacenie recepty : ";
+    private static final String PAYMENT_LINK = "https://merch-prod.snd.payu.com/pay/?orderId=33XGHR24GK200524GUEST000P01&token=eyJhbGciOiJIUzI1NiJ9.eyJvcmRlcklkIjoiMzNYR0hSMjRHSzIwMDUyNEdVRVNUMDAwUDAxIiwicG9zSWQiOiIxTkJPR2V3RSIsImF1dGhvcml0aWVzIjpbIlJPTEVfQ0xJRU5UIl0sImV4cCI6MTU5MDQzMDIxMiwiaXNzIjoiUEFZVSIsImF1ZCI6ImFwaS1nYXRld2F5Iiwic3ViIjoiUGF5VSBzdWJqZWN0IiwianRpIjoiODczMjY5MTItM2YyMS00ZjhlLWFjYTgtOWIyMTk1MTY3YzE4In0.btLSu-tr16lYN6ES2kxh7Bmeg6KlqmL68Rihs6GI4Vk#/payment";
+    private static final String SHORTEN_PAYMENT_LINK = "https://api.zaplacrecepte.pl/r/";
 
     @Autowired
     private PrescriptionRepository prescriptionRepository;
 
     @Autowired
     private PaymentService paymentService;
+
+    @Autowired
+    private EmailService emailService;
+
+    @Autowired
+    private SmsService smsService;
 
     public void createNewPrescription(PrescriptionEntity prescriptionEntity, String clientIp) {
         prescriptionEntity.setStatus(STATUS_NEW);
@@ -34,10 +46,17 @@ public class PrescriptionService {
         prescriptionEntity.setPaymentToken(payment.getPaymentToken());
         prescriptionEntity.setOrderRedirectToUrl(payment.getOrderRedirectToUrl());
         prescriptionEntity.setOrderRedirectFromKey(payment.getOrderRedirectFromKey());
+        try {
+            this.emailService.sendSimpleMessage(prescriptionEntity.getEmail(), MAIL_SUBJECT, MAIL_TEXT + SHORTEN_PAYMENT_LINK + payment.getOrderRedirectFromKey());
+        } catch (MessagingException e) {
+            e.printStackTrace();
+        }
+        this.smsService.sendSms(MAIL_TEXT + SHORTEN_PAYMENT_LINK + payment.getOrderRedirectFromKey(), prescriptionEntity.getPhoneNumber(), MAIL_SUBJECT);
         this.prescriptionRepository.save(prescriptionEntity);
     }
 
-    String actualDateTime() {
+
+    public String actualDateTime() {
         LocalDateTime localDateTime = LocalDateTime.now();
         ZonedDateTime zonedDateTime = ZonedDateTime.of(localDateTime, ZoneId.of("Europe/Warsaw"));
         return zonedDateTime.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
