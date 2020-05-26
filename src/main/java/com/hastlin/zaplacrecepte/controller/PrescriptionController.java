@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -25,9 +26,9 @@ public class PrescriptionController {
     private PrescriptionMapper prescriptionMapper;
 
     @PostMapping
-    ResponseEntity createPrescription(@RequestBody PrescriptionDTO prescriptionDTO) {
+    ResponseEntity createPrescription(@RequestBody PrescriptionDTO prescriptionDTO, HttpServletRequest request) {
         System.out.print("Got a request " + prescriptionDTO);
-        this.prescriptionService.createNewPrescription(prescriptionMapper.toEntity(prescriptionDTO));
+        this.prescriptionService.createNewPrescription(prescriptionMapper.toEntity(prescriptionDTO), request.getRemoteAddr());
         return ResponseEntity.ok("OK");
     }
 

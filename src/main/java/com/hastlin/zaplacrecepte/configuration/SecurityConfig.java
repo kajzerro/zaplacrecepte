@@ -42,6 +42,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         http.csrf().disable()
                 .headers().frameOptions().disable().and()
                 .cors().configurationSource(corsConfiguration()).and()
+                .authorizeRequests().antMatchers("/payment/notification/*", "/r/*").permitAll().and()
                 .authorizeRequests()
                 .anyRequest()
                 .authenticated()

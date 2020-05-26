@@ -2,6 +2,8 @@ package com.hastlin.zaplacrecepte.service;
 
 import com.hastlin.zaplacrecepte.model.entity.PrescriptionEntity;
 import com.hastlin.zaplacrecepte.repository.PrescriptionRepository;
+import com.hastlin.zaplacrecepte.service.payu.CreatePaymentService;
+import com.hastlin.zaplacrecepte.service.payu.Payment;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -14,14 +16,24 @@ import java.util.Optional;
 @Service
 public class PrescriptionService {
 
-    private static final String STATUS_UNPAID = "unpaid";
+    private static final String STATUS_NEW = "NEW";
 
     @Autowired
     private PrescriptionRepository prescriptionRepository;
 
-    public void createNewPrescription(PrescriptionEntity prescriptionEntity) {
-        prescriptionEntity.setStatus(STATUS_UNPAID);
+    @Autowired
+    private CreatePaymentService createPaymentService;
+
+    public void createNewPrescription(PrescriptionEntity prescriptionEntity, String clientIp) {
+        prescriptionEntity.setStatus(STATUS_NEW);
         prescriptionEntity.setCreateDateTime(actualDateTime());
+        this.prescriptionRepository.save(prescriptionEntity);
+
+        Payment payment = createPaymentService.createPayment(clientIp);
+        prescriptionEntity.setOrderId(payment.getOrderId());
+        prescriptionEntity.setPaymentToken(payment.getPaymentToken());
+        prescriptionEntity.setOrderRedirectToUrl(payment.getOrderRedirectToUrl());
+        prescriptionEntity.setOrderRedirectFromKey(payment.getOrderRedirectFromKey());
         this.prescriptionRepository.save(prescriptionEntity);
     }
 
