@@ -20,9 +20,10 @@ public class PrescriptionService {
     private static final String STATUS_NEW = "NEW";
     private static final String STATUS_UNPAID = "unpaid";
     private static final String MAIL_SUBJECT = "RECEPTA";
-    private static final String MAIL_TEXT = "Dr Marek Krzystyniak prosi o opłacenie recepty : ";
+    private static final String MAIL_REQUEST_PAYMENT_TEXT = "Dr Marek Krzystyniak prosi o oplacenie recepty: ";
     private static final String PAYMENT_LINK = "https://merch-prod.snd.payu.com/pay/?orderId=33XGHR24GK200524GUEST000P01&token=eyJhbGciOiJIUzI1NiJ9.eyJvcmRlcklkIjoiMzNYR0hSMjRHSzIwMDUyNEdVRVNUMDAwUDAxIiwicG9zSWQiOiIxTkJPR2V3RSIsImF1dGhvcml0aWVzIjpbIlJPTEVfQ0xJRU5UIl0sImV4cCI6MTU5MDQzMDIxMiwiaXNzIjoiUEFZVSIsImF1ZCI6ImFwaS1nYXRld2F5Iiwic3ViIjoiUGF5VSBzdWJqZWN0IiwianRpIjoiODczMjY5MTItM2YyMS00ZjhlLWFjYTgtOWIyMTk1MTY3YzE4In0.btLSu-tr16lYN6ES2kxh7Bmeg6KlqmL68Rihs6GI4Vk#/payment";
     private static final String SHORTEN_PAYMENT_LINK = "https://api.zaplacrecepte.pl/r/";
+    private static final String MAIL_WITH_PRESCRIPTION_TEXT = "Numer recepty to: ";
 
     @Autowired
     private PrescriptionRepository prescriptionRepository;
@@ -47,11 +48,11 @@ public class PrescriptionService {
         prescriptionEntity.setOrderRedirectToUrl(payment.getOrderRedirectToUrl());
         prescriptionEntity.setOrderRedirectFromKey(payment.getOrderRedirectFromKey());
         try {
-            this.emailService.sendSimpleMessage(prescriptionEntity.getEmail(), MAIL_SUBJECT, MAIL_TEXT + SHORTEN_PAYMENT_LINK + payment.getOrderRedirectFromKey());
+            this.emailService.sendSimpleMessage(prescriptionEntity.getEmail(), MAIL_SUBJECT, MAIL_REQUEST_PAYMENT_TEXT + SHORTEN_PAYMENT_LINK + payment.getOrderRedirectFromKey());
         } catch (MessagingException e) {
             e.printStackTrace();
         }
-        this.smsService.sendSms(MAIL_TEXT + SHORTEN_PAYMENT_LINK + payment.getOrderRedirectFromKey(), prescriptionEntity.getPhoneNumber(), MAIL_SUBJECT);
+        this.smsService.sendSms(MAIL_REQUEST_PAYMENT_TEXT + SHORTEN_PAYMENT_LINK + payment.getOrderRedirectFromKey(), prescriptionEntity.getPhoneNumber(), MAIL_SUBJECT);
         this.prescriptionRepository.save(prescriptionEntity);
     }
 
@@ -77,6 +78,7 @@ public class PrescriptionService {
         PrescriptionEntity prescriptionEntity = optionalPrescriptionEntity.get();
         if (updateEntity.getStatus().equals("COMPLETED")) {
             paymentService.acceptPayment(prescriptionEntity.getOrderId());
+            sendPrescriptionNumber(updateEntity);
         } else if (updateEntity.getStatus().equals("CANCELED")) {
             paymentService.cancelPayment(prescriptionEntity.getOrderId());
         }
@@ -88,6 +90,17 @@ public class PrescriptionService {
         prescriptionEntity.setPhoneNumber(updateEntity.getPhoneNumber());
         prescriptionEntity.setEmail(updateEntity.getEmail());
         prescriptionEntity.setStatus(updateEntity.getStatus());
+        prescriptionEntity.setPrescriptionNumber(updateEntity.getPrescriptionNumber());
         prescriptionRepository.save(prescriptionEntity);
+    }
+
+    private void sendPrescriptionNumber(PrescriptionEntity prescriptionEntity) {
+        try {
+            this.emailService.sendSimpleMessage(prescriptionEntity.getEmail(), MAIL_SUBJECT, MAIL_WITH_PRESCRIPTION_TEXT + prescriptionEntity.getPrescriptionNumber());
+        } catch (MessagingException e) {
+            e.printStackTrace();
+        }
+        this.smsService.sendSms(MAIL_WITH_PRESCRIPTION_TEXT + prescriptionEntity.getPrescriptionNumber(), prescriptionEntity.getPhoneNumber(), MAIL_SUBJECT);
+
     }
 }

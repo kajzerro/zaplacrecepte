@@ -20,6 +20,7 @@ public class PrescriptionMapper {
                 .email(prescriptionDTO.getEmail())
                 .phoneNumber(prescriptionDTO.getPhoneNumber())
                 .status(prescriptionDTO.getStatus())
+                .prescriptionNumber(prescriptionDTO.getPrescriptionNumber())
                 .build();
     }
 
@@ -35,6 +36,7 @@ public class PrescriptionMapper {
                 .phoneNumber(prescriptionEntity.getPhoneNumber())
                 .status(prescriptionEntity.getStatus())
                 .createDateTime(prescriptionEntity.getCreateDateTime())
+                .prescriptionNumber(prescriptionEntity.getPrescriptionNumber())
                 .build();
     }
 }
