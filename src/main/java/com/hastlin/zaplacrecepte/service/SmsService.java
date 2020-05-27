@@ -17,7 +17,7 @@ public class SmsService {
         MessageAttributeValue messageAttributeValue = new MessageAttributeValue();
         messageAttributeValue.setStringValue(sender);
         messageAttributeValue.setDataType("String");
-        smsAttributes.put("DefaultSenderID",messageAttributeValue);
+        smsAttributes.put("AWS.SNS.SMS.SenderID", messageAttributeValue);
         sendSMSMessage(amazonSNS, message, phoneNumber, smsAttributes);
     }
     private void sendSMSMessage(AmazonSNS amazonSNS, String message,
