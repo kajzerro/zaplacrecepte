@@ -30,6 +30,7 @@ public class PrescriptionEntity {
     private String paymentToken;
     private String orderRedirectFromKey;
     private String orderRedirectToUrl;
+    private String prescriptionNumber;
 
 
     @DynamoDBHashKey
@@ -104,5 +105,10 @@ public class PrescriptionEntity {
     @DynamoDBAttribute
     public String getOrderRedirectToUrl() {
         return orderRedirectToUrl;
+    }
+
+    @DynamoDBAttribute
+    public String getPrescriptionNumber() {
+        return prescriptionNumber;
     }
 }
