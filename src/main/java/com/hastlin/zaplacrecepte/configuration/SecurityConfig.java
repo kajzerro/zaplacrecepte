@@ -40,7 +40,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     public void configure(WebSecurity web) {
-        web.ignoring().antMatchers("/payment/notification/*", "/r/*", "/fake/*");
+        web.ignoring().antMatchers("/payment/notification/*", "/r/*");
     }
 
     @Override

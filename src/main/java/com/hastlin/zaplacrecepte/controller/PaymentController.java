@@ -34,10 +34,4 @@ public class PaymentController {
         }
         return "Wrong link";
     }
-
-    @GetMapping(path = "/fake/{paymentToken}")
-    public ResponseEntity fakeApprove(@PathVariable String paymentToken) {
-        statusPaymentService.fakeApprove(paymentToken);
-        return ResponseEntity.ok("OK");
-    }
 }

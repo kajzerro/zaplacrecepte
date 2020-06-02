@@ -30,7 +30,7 @@ public class PaymentService {
         HttpEntity<PayuOrderRequestDto> payuOrderRequest = new HttpEntity<>(PayuOrderRequestDto.builder()
                 .customerIp(clientIp)
                 .notifyUrl("https://api.zaplacrecepte.pl/payment/notification/" + paymentToken)
-                .continueUrl("https://api.zaplacrecepte.pl/fake/" + paymentToken)
+                .continueUrl("https://www.zaplacrecepte.pl/afterPayment")
                 .merchantPosId(MERCHANT_POS_ID)
                 .description("Recepta")
                 .currencyCode("PLN")

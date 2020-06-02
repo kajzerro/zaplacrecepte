@@ -26,15 +26,4 @@ public class StatusPaymentService {
         }
     }
 
-    public void fakeApprove(String paymentToken) {
-        Optional<PrescriptionEntity> optionalPrescriptionEntity = prescriptionRepository.findByPaymentToken(paymentToken);
-        if (optionalPrescriptionEntity.isPresent()) {
-            PrescriptionEntity prescriptionEntity = optionalPrescriptionEntity.get();
-            prescriptionEntity.setStatus("WAITING_FOR_CONFIRMATION");
-            prescriptionRepository.save(prescriptionEntity);
-        } else {
-            log.warn("FAKE PAYMENT paymentToken={}", paymentToken);
-        }
-    }
-
 }
