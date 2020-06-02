@@ -6,6 +6,8 @@ import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBHashKey;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBTable;
 import lombok.*;
 
+import java.util.List;
+
 @DynamoDBTable(tableName = "PRESCRIPTION")
 @AllArgsConstructor
 @NoArgsConstructor
@@ -31,6 +33,7 @@ public class PrescriptionEntity {
     private String orderRedirectFromKey;
     private String orderRedirectToUrl;
     private String prescriptionNumber;
+    private List<String> errors;
 
 
     @DynamoDBHashKey
@@ -110,5 +113,14 @@ public class PrescriptionEntity {
     @DynamoDBAttribute
     public String getPrescriptionNumber() {
         return prescriptionNumber;
+    }
+
+    @DynamoDBAttribute
+    public List getErrors() {
+        return errors;
+    }
+
+    public void addError(String newError) {
+        this.errors.add(newError);
     }
 }

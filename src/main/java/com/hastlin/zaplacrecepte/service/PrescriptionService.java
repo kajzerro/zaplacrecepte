@@ -2,10 +2,14 @@ package com.hastlin.zaplacrecepte.service;
 
 import com.hastlin.zaplacrecepte.model.entity.PrescriptionEntity;
 import com.hastlin.zaplacrecepte.repository.PrescriptionRepository;
+import com.hastlin.zaplacrecepte.service.exception.PaymentException;
 import com.hastlin.zaplacrecepte.service.payu.Payment;
 import com.hastlin.zaplacrecepte.service.payu.PaymentService;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.tomcat.jni.Time;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClientException;
 
 import javax.mail.MessagingException;
 import java.time.LocalDateTime;
@@ -15,6 +19,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 
 @Service
+@Slf4j
 public class PrescriptionService {
 
     private static final String STATUS_NEW = "NEW";
@@ -40,20 +45,41 @@ public class PrescriptionService {
     public void createNewPrescription(PrescriptionEntity prescriptionEntity, String clientIp) {
         prescriptionEntity.setStatus(STATUS_NEW);
         prescriptionEntity.setCreateDateTime(actualDateTime());
-        this.prescriptionRepository.save(prescriptionEntity);
+        try {
+            Payment payment = paymentService.createPayment(clientIp);
+            prescriptionEntity.setOrderId(payment.getOrderId());
+            prescriptionEntity.setPaymentToken(payment.getPaymentToken());
+            prescriptionEntity.setOrderRedirectToUrl(payment.getOrderRedirectToUrl());
+            prescriptionEntity.setOrderRedirectFromKey(payment.getOrderRedirectFromKey());
+            sendEmailWithPaymentRequest(prescriptionEntity, payment);
+            sendSmsWithPaymentRequest(prescriptionEntity, payment);
+        }
+        catch (PaymentException | RestClientException e) {
+            log.error("Communication with payment provider failed: {}", e.getMessage());
+            prescriptionEntity.addError("PayU: " + Long.toString(Time.now()) + " " + e.getMessage());
+        }
 
-        Payment payment = paymentService.createPayment(clientIp);
-        prescriptionEntity.setOrderId(payment.getOrderId());
-        prescriptionEntity.setPaymentToken(payment.getPaymentToken());
-        prescriptionEntity.setOrderRedirectToUrl(payment.getOrderRedirectToUrl());
-        prescriptionEntity.setOrderRedirectFromKey(payment.getOrderRedirectFromKey());
+        this.prescriptionRepository.save(prescriptionEntity);
+    }
+
+    private void sendSmsWithPaymentRequest(PrescriptionEntity prescriptionEntity, Payment payment) {
+        try {
+            this.smsService.sendSms(MAIL_REQUEST_PAYMENT_TEXT + SHORTEN_PAYMENT_LINK + payment.getOrderRedirectFromKey(), prescriptionEntity.getPhoneNumber(), MAIL_SUBJECT);
+        }
+        catch (RuntimeException e) {
+            log.error("Sending sms failed: {}", e.getMessage());
+            prescriptionEntity.addError("SMS: " + Long.toString(Time.now()) + " " + e.getMessage());
+        }
+    }
+
+    private void sendEmailWithPaymentRequest(PrescriptionEntity prescriptionEntity, Payment payment) {
         try {
             this.emailService.sendSimpleMessage(prescriptionEntity.getEmail(), MAIL_SUBJECT, MAIL_REQUEST_PAYMENT_TEXT + SHORTEN_PAYMENT_LINK + payment.getOrderRedirectFromKey());
-        } catch (MessagingException e) {
-            e.printStackTrace();
         }
-        this.smsService.sendSms(MAIL_REQUEST_PAYMENT_TEXT + SHORTEN_PAYMENT_LINK + payment.getOrderRedirectFromKey(), prescriptionEntity.getPhoneNumber(), MAIL_SUBJECT);
-        this.prescriptionRepository.save(prescriptionEntity);
+        catch (MessagingException e) {
+            log.error("Email could not be delivered: {}", e.getMessage());
+            prescriptionEntity.addError("Email: " + Long.toString(Time.now()) + " " + e.getMessage());
+        }
     }
 
 
@@ -98,9 +124,15 @@ public class PrescriptionService {
         try {
             this.emailService.sendSimpleMessage(prescriptionEntity.getEmail(), MAIL_SUBJECT, MAIL_WITH_PRESCRIPTION_TEXT + prescriptionEntity.getPrescriptionNumber());
         } catch (MessagingException e) {
-            e.printStackTrace();
+            log.error("Email could not be delivered: {}", e.getMessage());
+            prescriptionEntity.addError("Email: " + Long.toString(Time.now()) + " " + e.getMessage());
         }
-        this.smsService.sendSms(MAIL_WITH_PRESCRIPTION_TEXT + prescriptionEntity.getPrescriptionNumber(), prescriptionEntity.getPhoneNumber(), MAIL_SUBJECT);
-
+        try {
+            this.smsService.sendSms(MAIL_WITH_PRESCRIPTION_TEXT + prescriptionEntity.getPrescriptionNumber(), prescriptionEntity.getPhoneNumber(), MAIL_SUBJECT);
+        }
+        catch (RuntimeException e) {
+            log.error("Sending sms failed: {}", e.getMessage());
+            prescriptionEntity.addError("SMS: " + Long.toString(Time.now()) + " " + e.getMessage());
+        }
     }
 }

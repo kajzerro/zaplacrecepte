@@ -22,7 +22,7 @@ public class SmsService {
     }
     private void sendSMSMessage(AmazonSNS amazonSNS, String message,
                                       String phoneNumber, Map<String, MessageAttributeValue> smsAttributes) {
-        PublishResult result = amazonSNS.publish(new PublishRequest()
+         amazonSNS.publish(new PublishRequest()
                 .withMessage(message)
                 .withPhoneNumber(phoneNumber)
                 .withMessageAttributes(smsAttributes));

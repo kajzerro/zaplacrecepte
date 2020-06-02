@@ -1,6 +1,7 @@
 package com.hastlin.zaplacrecepte.service.payu;
 
 import com.hastlin.zaplacrecepte.model.dto.payu.*;
+import com.hastlin.zaplacrecepte.service.exception.PaymentException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
@@ -39,6 +40,11 @@ public class PaymentService {
                 .build(), headers);
 
         ResponseEntity<PayuOrderResponseDto> payuOrderResponseDtoResponseEntity = restTemplate.exchange(PAYMENT_HOST + "/api/v2_1/orders", HttpMethod.POST, payuOrderRequest, PayuOrderResponseDto.class);
+        if(payuOrderResponseDtoResponseEntity.getStatusCode().isError()) {
+            log.error("Payment provider returned code {} and message {}", payuOrderResponseDtoResponseEntity.getStatusCode(), payuOrderResponseDtoResponseEntity.getBody());
+            String body = payuOrderResponseDtoResponseEntity.hasBody() ? payuOrderResponseDtoResponseEntity.getBody().toString() : "Body not provided";
+            throw new PaymentException(body);
+        }
         PayuOrderResponseDto payuOrderResponseDto = payuOrderResponseDtoResponseEntity.getBody();
         log.info("Created payment with orderId {}", payuOrderResponseDto.getOrderId());
         return Payment.builder()
