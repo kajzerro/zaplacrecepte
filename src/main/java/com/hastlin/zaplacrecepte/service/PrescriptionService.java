@@ -6,7 +6,6 @@ import com.hastlin.zaplacrecepte.service.exception.PaymentException;
 import com.hastlin.zaplacrecepte.service.payu.Payment;
 import com.hastlin.zaplacrecepte.service.payu.PaymentService;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.tomcat.jni.Time;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
@@ -56,7 +55,7 @@ public class PrescriptionService {
         }
         catch (PaymentException | RestClientException e) {
             log.error("Communication with payment provider failed: {}", e.getMessage());
-            prescriptionEntity.addError("PayU: " + Long.toString(Time.now()) + " " + e.getMessage());
+            prescriptionEntity.addError("PayU: " + this.actualDateTime() + " " + e.getMessage());
         }
 
         this.prescriptionRepository.save(prescriptionEntity);
@@ -68,17 +67,16 @@ public class PrescriptionService {
         }
         catch (RuntimeException e) {
             log.error("Sending sms failed: {}", e.getMessage());
-            prescriptionEntity.addError("SMS: " + Long.toString(Time.now()) + " " + e.getMessage());
+            prescriptionEntity.addError("SMS: " + this.actualDateTime()+ " " + e.getMessage());
         }
     }
 
     private void sendEmailWithPaymentRequest(PrescriptionEntity prescriptionEntity, Payment payment) {
         try {
             this.emailService.sendSimpleMessage(prescriptionEntity.getEmail(), MAIL_SUBJECT, MAIL_REQUEST_PAYMENT_TEXT + SHORTEN_PAYMENT_LINK + payment.getOrderRedirectFromKey());
-        }
-        catch (MessagingException e) {
+        } catch (MessagingException | RuntimeException e) {
             log.error("Email could not be delivered: {}", e.getMessage());
-            prescriptionEntity.addError("Email: " + Long.toString(Time.now()) + " " + e.getMessage());
+            prescriptionEntity.addError("Email: " + this.actualDateTime() + " " + e.getMessage());
         }
     }
 
@@ -123,16 +121,16 @@ public class PrescriptionService {
     private void sendPrescriptionNumber(PrescriptionEntity prescriptionEntity) {
         try {
             this.emailService.sendSimpleMessage(prescriptionEntity.getEmail(), MAIL_SUBJECT, MAIL_WITH_PRESCRIPTION_TEXT + prescriptionEntity.getPrescriptionNumber());
-        } catch (MessagingException e) {
+        } catch (MessagingException | RuntimeException e) {
             log.error("Email could not be delivered: {}", e.getMessage());
-            prescriptionEntity.addError("Email: " + Long.toString(Time.now()) + " " + e.getMessage());
+            prescriptionEntity.addError("Email: " + this.actualDateTime() + " " + e.getMessage());
         }
         try {
             this.smsService.sendSms(MAIL_WITH_PRESCRIPTION_TEXT + prescriptionEntity.getPrescriptionNumber(), prescriptionEntity.getPhoneNumber(), MAIL_SUBJECT);
         }
         catch (RuntimeException e) {
             log.error("Sending sms failed: {}", e.getMessage());
-            prescriptionEntity.addError("SMS: " + Long.toString(Time.now()) + " " + e.getMessage());
+            prescriptionEntity.addError("SMS: " + this.actualDateTime() + " " + e.getMessage());
         }
     }
 }
