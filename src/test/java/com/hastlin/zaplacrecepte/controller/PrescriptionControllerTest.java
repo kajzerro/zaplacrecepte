@@ -2,6 +2,7 @@ package com.hastlin.zaplacrecepte.controller;
 
 import com.hastlin.zaplacrecepte.repository.PrescriptionRepository;
 import com.hastlin.zaplacrecepte.service.EmailService;
+import com.hastlin.zaplacrecepte.service.SmsService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,6 +39,10 @@ public class PrescriptionControllerTest {
     @MockBean
     EmailService emailService;
 
+    @MockBean
+    SmsService smsService;
+
+
     @Autowired
     private MockMvc mockMvc;
 
@@ -54,7 +59,7 @@ public class PrescriptionControllerTest {
                 .andExpect(status().isOk())
                 .andReturn().getResponse();
 
-        verify(prescriptionRepository, times(2)).save(any());
+        verify(prescriptionRepository, times(1)).save(any());
 
     }
 
