@@ -1,0 +1,9 @@
+payu:
+  host: "https://secure.snd.payu.com"
+  clientid: "386506"
+  clientsecret: "acd67c74de98157b5816bdaa3e8c83ee"
+  merchantposid: "386506"
+  notifyUrl: "https://api.demo.zaplacrecepte.pl/payment/notification/"
+  continueUrl: "https://demo.zaplacrecepte.pl/thankyou"
+  shortPaymentLink: "https://api.demo.zaplacrecepte.pl/r/"
+
