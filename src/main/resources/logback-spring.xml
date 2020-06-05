@@ -16,7 +16,7 @@
             <appender-ref ref="Console"/>
         </root>
     </springProfile>
-    <springProfile name="dev,prod">
+    <springProfile name="demo,prod">
         <appender name="cloud-watch" class="io.github.dibog.AwsLogAppender">
             <createLogGroup>false</createLogGroup>
             <groupName>ZaplacRecepte</groupName>

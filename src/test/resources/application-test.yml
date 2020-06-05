@@ -1,0 +1,11 @@
+payu:
+  host: "http://localhost"
+  clientid: "test"
+  clientsecret: "test"
+  merchantposid: "test"
+  notifyUrl: "https://localhost"
+  continueUrl: "https://localhost"
+  shortPaymentLink: "https://localhost"
+
+
+

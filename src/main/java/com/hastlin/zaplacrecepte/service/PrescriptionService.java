@@ -7,6 +7,7 @@ import com.hastlin.zaplacrecepte.service.payu.Payment;
 import com.hastlin.zaplacrecepte.service.payu.PaymentService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
 
@@ -22,12 +23,12 @@ import java.util.Optional;
 public class PrescriptionService {
 
     private static final String STATUS_NEW = "NEW";
-    private static final String STATUS_UNPAID = "unpaid";
     private static final String MAIL_SUBJECT = "RECEPTA";
     private static final String MAIL_REQUEST_PAYMENT_TEXT = "Dr Marek Krzystyniak prosi o oplacenie recepty: ";
-    private static final String PAYMENT_LINK = "https://merch-prod.snd.payu.com/pay/?orderId=33XGHR24GK200524GUEST000P01&token=eyJhbGciOiJIUzI1NiJ9.eyJvcmRlcklkIjoiMzNYR0hSMjRHSzIwMDUyNEdVRVNUMDAwUDAxIiwicG9zSWQiOiIxTkJPR2V3RSIsImF1dGhvcml0aWVzIjpbIlJPTEVfQ0xJRU5UIl0sImV4cCI6MTU5MDQzMDIxMiwiaXNzIjoiUEFZVSIsImF1ZCI6ImFwaS1nYXRld2F5Iiwic3ViIjoiUGF5VSBzdWJqZWN0IiwianRpIjoiODczMjY5MTItM2YyMS00ZjhlLWFjYTgtOWIyMTk1MTY3YzE4In0.btLSu-tr16lYN6ES2kxh7Bmeg6KlqmL68Rihs6GI4Vk#/payment";
-    private static final String SHORTEN_PAYMENT_LINK = "https://api.zaplacrecepte.pl/r/";
     private static final String MAIL_WITH_PRESCRIPTION_TEXT = "Numer recepty to: ";
+
+    @Value("${payu.shortPaymentLink}")
+    private String shortPaymentLink;
 
     @Autowired
     private PrescriptionRepository prescriptionRepository;
@@ -63,7 +64,7 @@ public class PrescriptionService {
 
     private void sendSmsWithPaymentRequest(PrescriptionEntity prescriptionEntity, Payment payment) {
         try {
-            this.smsService.sendSms(MAIL_REQUEST_PAYMENT_TEXT + SHORTEN_PAYMENT_LINK + payment.getOrderRedirectFromKey(), prescriptionEntity.getPhoneNumber(), MAIL_SUBJECT);
+            this.smsService.sendSms(MAIL_REQUEST_PAYMENT_TEXT + this.shortPaymentLink + payment.getOrderRedirectFromKey(), prescriptionEntity.getPhoneNumber(), MAIL_SUBJECT);
         }
         catch (RuntimeException e) {
             log.error("Sending sms failed: {}", e.getMessage());
@@ -73,7 +74,7 @@ public class PrescriptionService {
 
     private void sendEmailWithPaymentRequest(PrescriptionEntity prescriptionEntity, Payment payment) {
         try {
-            this.emailService.sendSimpleMessage(prescriptionEntity.getEmail(), MAIL_SUBJECT, MAIL_REQUEST_PAYMENT_TEXT + SHORTEN_PAYMENT_LINK + payment.getOrderRedirectFromKey());
+            this.emailService.sendSimpleMessage(prescriptionEntity.getEmail(), MAIL_SUBJECT, MAIL_REQUEST_PAYMENT_TEXT + this.shortPaymentLink + payment.getOrderRedirectFromKey());
         } catch (MessagingException | RuntimeException e) {
             log.error("Email could not be delivered: {}", e.getMessage());
             prescriptionEntity.addError("Email: " + this.actualDateTime() + " " + e.getMessage());
