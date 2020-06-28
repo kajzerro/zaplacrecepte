@@ -3,16 +3,20 @@ package com.hastlin.zaplacrecepte.controller;
 import com.hastlin.zaplacrecepte.model.dto.PrescriptionDTO;
 import com.hastlin.zaplacrecepte.model.mapper.PrescriptionMapper;
 import com.hastlin.zaplacrecepte.service.PrescriptionService;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.validation.Valid;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
+import javax.servlet.http.HttpServletRequest;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 /**
  * Created by mateuszkaszyk on 15/05/2020.
@@ -38,6 +42,11 @@ public class PrescriptionController {
     @GetMapping
     List<PrescriptionDTO> getAllPrescriptions() {
         return StreamSupport.stream(this.prescriptionService.getAllPrescriptions().spliterator(), false).map(this.prescriptionMapper::toDto).collect(Collectors.toList());
+    }
+
+    @GetMapping(path = "client/{id}")
+    PrescriptionDTO getPrescription(@PathVariable String id) {
+        return this.prescriptionMapper.toDto(this.prescriptionService.getPrescription(id));
     }
 
     @PutMapping(path = "/{id}")

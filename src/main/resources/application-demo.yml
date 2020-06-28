@@ -5,5 +5,5 @@ payu:
   merchantposid: "386506"
   notifyUrl: "https://api.demo.zaplacrecepte.pl/payment/notification/"
   continueUrl: "https://demo.zaplacrecepte.pl/thankyou"
-  shortPaymentLink: "https://api.demo.zaplacrecepte.pl/r/"
+  shortPaymentLink: "https://demo.zaplacrecepte.pl/r/"
 

@@ -5,18 +5,17 @@ import com.hastlin.zaplacrecepte.repository.PrescriptionRepository;
 import com.hastlin.zaplacrecepte.service.exception.PaymentException;
 import com.hastlin.zaplacrecepte.service.payu.Payment;
 import com.hastlin.zaplacrecepte.service.payu.PaymentService;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestClientException;
-
-import javax.mail.MessagingException;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Optional;
+import javax.mail.MessagingException;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClientException;
 
 @Service
 @Slf4j
@@ -45,6 +44,7 @@ public class PrescriptionService {
     public void createNewPrescription(PrescriptionEntity prescriptionEntity, String clientIp) {
         prescriptionEntity.setStatus(STATUS_NEW);
         prescriptionEntity.setCreateDateTime(actualDateTime());
+        this.prescriptionRepository.save(prescriptionEntity);
         try {
             Payment payment = paymentService.createPayment(clientIp);
             prescriptionEntity.setOrderId(payment.getOrderId());
@@ -64,7 +64,7 @@ public class PrescriptionService {
 
     private void sendSmsWithPaymentRequest(PrescriptionEntity prescriptionEntity, Payment payment) {
         try {
-            this.smsService.sendSms(MAIL_REQUEST_PAYMENT_TEXT + this.shortPaymentLink + payment.getOrderRedirectFromKey(), prescriptionEntity.getPhoneNumber(), MAIL_SUBJECT);
+            this.smsService.sendSms(MAIL_REQUEST_PAYMENT_TEXT + this.shortPaymentLink + prescriptionEntity.getId(), prescriptionEntity.getPhoneNumber(), MAIL_SUBJECT);
         }
         catch (RuntimeException e) {
             log.error("Sending sms failed: {}", e.getMessage());
@@ -74,7 +74,7 @@ public class PrescriptionService {
 
     private void sendEmailWithPaymentRequest(PrescriptionEntity prescriptionEntity, Payment payment) {
         try {
-            this.emailService.sendSimpleMessage(prescriptionEntity.getEmail(), MAIL_SUBJECT, MAIL_REQUEST_PAYMENT_TEXT + this.shortPaymentLink + payment.getOrderRedirectFromKey());
+            this.emailService.sendSimpleMessage(prescriptionEntity.getEmail(), MAIL_SUBJECT, MAIL_REQUEST_PAYMENT_TEXT + this.shortPaymentLink + prescriptionEntity.getId());
         } catch (MessagingException | RuntimeException e) {
             log.error("Email could not be delivered: {}", e.getMessage());
             prescriptionEntity.addError("Email: " + this.actualDateTime() + " " + e.getMessage());
@@ -86,6 +86,15 @@ public class PrescriptionService {
         LocalDateTime localDateTime = LocalDateTime.now();
         ZonedDateTime zonedDateTime = ZonedDateTime.of(localDateTime, ZoneId.of("Europe/Warsaw"));
         return zonedDateTime.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+    }
+
+    public PrescriptionEntity getPrescription(String id) {
+        Optional<PrescriptionEntity> optionalPrescriptionEntity = this.prescriptionRepository.findById(id);
+
+        if (!optionalPrescriptionEntity.isPresent()) {
+            throw new RuntimeException("Prescription not found");
+        }
+        return optionalPrescriptionEntity.get();
     }
 
     public Iterable<PrescriptionEntity> getAllPrescriptions() {
