@@ -111,7 +111,7 @@ public class PrescriptionService {
 
         PrescriptionEntity prescriptionEntity = optionalPrescriptionEntity.get();
         if (updateEntity.getStatus().equals("COMPLETED")) {
-            paymentService.acceptPayment(prescriptionEntity.getOrderId());
+//            paymentService.acceptPayment(prescriptionEntity.getOrderId());
             sendPrescriptionNumber(updateEntity);
         } else if (updateEntity.getStatus().equals("CANCELED")) {
             paymentService.cancelPayment(prescriptionEntity.getOrderId());
