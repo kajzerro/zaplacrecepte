@@ -5,17 +5,18 @@ import com.hastlin.zaplacrecepte.repository.PrescriptionRepository;
 import com.hastlin.zaplacrecepte.service.exception.PaymentException;
 import com.hastlin.zaplacrecepte.service.payu.Payment;
 import com.hastlin.zaplacrecepte.service.payu.PaymentService;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.Optional;
-import javax.mail.MessagingException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
+
+import javax.mail.MessagingException;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Optional;
 
 @Service
 @Slf4j
@@ -46,19 +47,18 @@ public class PrescriptionService {
         prescriptionEntity.setCreateDateTime(actualDateTime());
         this.prescriptionRepository.save(prescriptionEntity);
         try {
-            Payment payment = paymentService.createPayment(clientIp);
-            prescriptionEntity.setOrderId(payment.getOrderId());
-            prescriptionEntity.setPaymentToken(payment.getPaymentToken());
-            prescriptionEntity.setOrderRedirectToUrl(payment.getOrderRedirectToUrl());
-            prescriptionEntity.setOrderRedirectFromKey(payment.getOrderRedirectFromKey());
-            sendEmailWithPaymentRequest(prescriptionEntity, payment);
-            sendSmsWithPaymentRequest(prescriptionEntity, payment);
+//            Payment payment = paymentService.createPayment(clientIp);
+//            prescriptionEntity.setOrderId(payment.getOrderId());
+//            prescriptionEntity.setPaymentToken(payment.getPaymentToken());
+//            prescriptionEntity.setOrderRedirectToUrl(payment.getOrderRedirectToUrl());
+//            prescriptionEntity.setOrderRedirectFromKey(payment.getOrderRedirectFromKey());
+            sendEmailWithPaymentRequest(prescriptionEntity, null);
+            sendSmsWithPaymentRequest(prescriptionEntity, null);
         }
         catch (PaymentException | RestClientException e) {
             log.error("Communication with payment provider failed: {}", e.getMessage());
             prescriptionEntity.addError("PayU: " + this.actualDateTime() + " " + e.getMessage());
         }
-
         this.prescriptionRepository.save(prescriptionEntity);
     }
 
