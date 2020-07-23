@@ -11,7 +11,5 @@ public interface PrescriptionRepository extends CrudRepository<PrescriptionEntit
 
     Optional<PrescriptionEntity> findById(String id);
 
-    Optional<PrescriptionEntity> findByPaymentTokenAndOrderId(String paymentToken, String orderId);
-
-    Optional<PrescriptionEntity> findByOrderRedirectFromKey(String orderRedirectFromKey);
+    Optional<PrescriptionEntity> findByPaymentToken(String paymentToken);
 }

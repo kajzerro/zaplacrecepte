@@ -37,6 +37,7 @@ public class PrescriptionMapper {
                 .status(prescriptionEntity.getStatus())
                 .createDateTime(prescriptionEntity.getCreateDateTime())
                 .prescriptionNumber(prescriptionEntity.getPrescriptionNumber())
+                .orderUrl(prescriptionEntity.getOrderUrl())
                 .build();
     }
 }
