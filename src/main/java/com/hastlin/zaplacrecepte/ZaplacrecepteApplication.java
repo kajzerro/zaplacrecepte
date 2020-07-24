@@ -11,4 +11,9 @@ public class ZaplacrecepteApplication {
 		SpringApplication.run(ZaplacrecepteApplication.class, args);
 	}
 
+	//TODO: Poprawna odpowiedź na zmiane statusu
+	//TODO: Zwrot płatności klientowi
+	//TODO: Filtracja adresów IP z których mogą przychodzić update
+	//TODO: Przetestować wszystkie scenariusze płacenia/niepłacenia/odrzucenia płatności
+
 }
