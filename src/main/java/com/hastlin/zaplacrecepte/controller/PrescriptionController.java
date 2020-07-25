@@ -3,20 +3,14 @@ package com.hastlin.zaplacrecepte.controller;
 import com.hastlin.zaplacrecepte.model.dto.PrescriptionDTO;
 import com.hastlin.zaplacrecepte.model.mapper.PrescriptionMapper;
 import com.hastlin.zaplacrecepte.service.PrescriptionService;
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
-import javax.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 /**
  * Created by mateuszkaszyk on 15/05/2020.
@@ -33,9 +27,9 @@ public class PrescriptionController {
     private PrescriptionMapper prescriptionMapper;
 
     @PostMapping
-    ResponseEntity createPrescription(@RequestBody PrescriptionDTO prescriptionDTO, HttpServletRequest request) {
+    ResponseEntity createPrescription(@RequestBody PrescriptionDTO prescriptionDTO) {
         log.info("Got a request {}", prescriptionDTO);
-        this.prescriptionService.createNewPrescription(prescriptionMapper.toEntity(prescriptionDTO), request.getRemoteAddr());
+        this.prescriptionService.createNewPrescription(prescriptionMapper.toEntity(prescriptionDTO));
         return ResponseEntity.ok("OK");
     }
 

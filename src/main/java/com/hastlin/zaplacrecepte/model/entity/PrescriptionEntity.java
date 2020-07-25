@@ -29,8 +29,7 @@ public class PrescriptionEntity {
     private String createDateTime;
     private String orderId;
     private String paymentToken;
-    private String orderRedirectFromKey;
-    private String orderRedirectToUrl;
+    private String orderUrl;
     private String prescriptionNumber;
 
     @DynamoDBTypeConvertedJson
@@ -102,13 +101,8 @@ public class PrescriptionEntity {
     }
 
     @DynamoDBAttribute
-    public String getOrderRedirectFromKey() {
-        return orderRedirectFromKey;
-    }
-
-    @DynamoDBAttribute
-    public String getOrderRedirectToUrl() {
-        return orderRedirectToUrl;
+    public String getOrderUrl() {
+        return orderUrl;
     }
 
     @DynamoDBAttribute

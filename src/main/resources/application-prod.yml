@@ -1,9 +1,9 @@
-payu:
-  host: "https://secure.snd.payu.com"
-  clientid: "386506"
-  clientsecret: "acd67c74de98157b5816bdaa3e8c83ee"
-  merchantposid: "386506"
-  notifyUrl: "https://api.zaplacrecepte.pl/payment/notification/"
+p24:
+  host: "https://secure.przelewy24.pl"
+  clientId: 118607
+  crc: "6cbf3f18bf0aba5b"
+  apiKey: "ac64e455852ab6bc50fe54d1ed4baa93"
+  notifyUrl: "https://api.zaplacrecepte.pl/payment/notification/p24/"
   continueUrl: "https://www.zaplacrecepte.pl/thankyou"
-  shortPaymentLink: "https://api.zaplacrecepte.pl/r/"
+  shortPaymentLink: "https://www.zaplacrecepte.pl/r/"
 

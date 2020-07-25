@@ -3,8 +3,8 @@ package com.hastlin.zaplacrecepte.service;
 import com.hastlin.zaplacrecepte.model.entity.PrescriptionEntity;
 import com.hastlin.zaplacrecepte.repository.PrescriptionRepository;
 import com.hastlin.zaplacrecepte.service.exception.PaymentException;
-import com.hastlin.zaplacrecepte.service.payu.Payment;
-import com.hastlin.zaplacrecepte.service.payu.PaymentService;
+import com.hastlin.zaplacrecepte.service.p24.Payment;
+import com.hastlin.zaplacrecepte.service.p24.PaymentService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -27,7 +27,7 @@ public class PrescriptionService {
     private static final String MAIL_REQUEST_PAYMENT_TEXT = "Dr Marek Krzystyniak prosi o oplacenie recepty: ";
     private static final String MAIL_WITH_PRESCRIPTION_TEXT = "Numer recepty to: ";
 
-    @Value("${payu.shortPaymentLink}")
+    @Value("${p24.shortPaymentLink}")
     private String shortPaymentLink;
 
     @Autowired
@@ -42,22 +42,20 @@ public class PrescriptionService {
     @Autowired
     private SmsService smsService;
 
-    public void createNewPrescription(PrescriptionEntity prescriptionEntity, String clientIp) {
+    public void createNewPrescription(PrescriptionEntity prescriptionEntity) {
         prescriptionEntity.setStatus(STATUS_NEW);
         prescriptionEntity.setCreateDateTime(actualDateTime());
         this.prescriptionRepository.save(prescriptionEntity);
         try {
-//            Payment payment = paymentService.createPayment(clientIp);
-//            prescriptionEntity.setOrderId(payment.getOrderId());
-//            prescriptionEntity.setPaymentToken(payment.getPaymentToken());
-//            prescriptionEntity.setOrderRedirectToUrl(payment.getOrderRedirectToUrl());
-//            prescriptionEntity.setOrderRedirectFromKey(payment.getOrderRedirectFromKey());
+            Payment payment = paymentService.createPayment(prescriptionEntity.getEmail());
+            prescriptionEntity.setOrderUrl(payment.getOrderUrl());
+            prescriptionEntity.setPaymentToken(payment.getPaymentToken());
             sendEmailWithPaymentRequest(prescriptionEntity, null);
             sendSmsWithPaymentRequest(prescriptionEntity, null);
         }
         catch (PaymentException | RestClientException e) {
             log.error("Communication with payment provider failed: {}", e.getMessage());
-            prescriptionEntity.addError("PayU: " + this.actualDateTime() + " " + e.getMessage());
+            prescriptionEntity.addError("P24: " + this.actualDateTime() + " " + e.getMessage());
         }
         this.prescriptionRepository.save(prescriptionEntity);
     }
@@ -111,7 +109,6 @@ public class PrescriptionService {
 
         PrescriptionEntity prescriptionEntity = optionalPrescriptionEntity.get();
         if (updateEntity.getStatus().equals("COMPLETED")) {
-//            paymentService.acceptPayment(prescriptionEntity.getOrderId());
             sendPrescriptionNumber(updateEntity);
         } else if (updateEntity.getStatus().equals("CANCELED")) {
             paymentService.cancelPayment(prescriptionEntity.getOrderId());
