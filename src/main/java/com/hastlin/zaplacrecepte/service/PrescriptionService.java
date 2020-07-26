@@ -50,8 +50,8 @@ public class PrescriptionService {
             Payment payment = paymentService.createPayment(prescriptionEntity.getEmail());
             prescriptionEntity.setOrderUrl(payment.getOrderUrl());
             prescriptionEntity.setPaymentToken(payment.getPaymentToken());
-            sendEmailWithPaymentRequest(prescriptionEntity, null);
-            sendSmsWithPaymentRequest(prescriptionEntity, null);
+            sendEmailWithPaymentRequest(prescriptionEntity);
+            sendSmsWithPaymentRequest(prescriptionEntity);
         }
         catch (PaymentException | RestClientException e) {
             log.error("Communication with payment provider failed: {}", e.getMessage());
@@ -60,7 +60,7 @@ public class PrescriptionService {
         this.prescriptionRepository.save(prescriptionEntity);
     }
 
-    private void sendSmsWithPaymentRequest(PrescriptionEntity prescriptionEntity, Payment payment) {
+    private void sendSmsWithPaymentRequest(PrescriptionEntity prescriptionEntity) {
         try {
             this.smsService.sendSms(MAIL_REQUEST_PAYMENT_TEXT + this.shortPaymentLink + prescriptionEntity.getId(), prescriptionEntity.getPhoneNumber(), MAIL_SUBJECT);
         }
@@ -70,7 +70,7 @@ public class PrescriptionService {
         }
     }
 
-    private void sendEmailWithPaymentRequest(PrescriptionEntity prescriptionEntity, Payment payment) {
+    private void sendEmailWithPaymentRequest(PrescriptionEntity prescriptionEntity) {
         try {
             this.emailService.sendSimpleMessage(prescriptionEntity.getEmail(), MAIL_SUBJECT, MAIL_REQUEST_PAYMENT_TEXT + this.shortPaymentLink + prescriptionEntity.getId());
         } catch (MessagingException | RuntimeException e) {
@@ -111,7 +111,7 @@ public class PrescriptionService {
         if (updateEntity.getStatus().equals("COMPLETED")) {
             sendPrescriptionNumber(updateEntity);
         } else if (updateEntity.getStatus().equals("CANCELED")) {
-            paymentService.cancelPayment(prescriptionEntity.getOrderId());
+            paymentService.cancelPayment(prescriptionEntity);
         }
         prescriptionEntity.setFirstName(updateEntity.getFirstName());
         prescriptionEntity.setLastName(updateEntity.getLastName());
