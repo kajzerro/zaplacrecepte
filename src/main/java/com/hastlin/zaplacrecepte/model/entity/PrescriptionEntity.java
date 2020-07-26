@@ -27,7 +27,7 @@ public class PrescriptionEntity {
     private String email;
     private String status;
     private String createDateTime;
-    private String orderId;
+    private int orderId;
     private String paymentToken;
     private String orderUrl;
     private String prescriptionNumber;
@@ -91,7 +91,7 @@ public class PrescriptionEntity {
     }
 
     @DynamoDBAttribute
-    public String getOrderId() {
+    public int getOrderId() {
         return orderId;
     }
 

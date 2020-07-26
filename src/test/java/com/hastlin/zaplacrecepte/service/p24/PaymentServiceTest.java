@@ -29,6 +29,5 @@ public class PaymentServiceTest {
     @Test
     public void shouldCreateCorrectSign() {
         assertEquals(paymentService.createSign("test", 118607, 123, "PLN", "e5ba4c3e5354171f"), "cde250840bf1e9ee16dbb8de10237e6861476bf7337ea3f7bf04846454ebb1608c179078f06120f8bcd892221988c4fa");
-        ;
     }
 }
