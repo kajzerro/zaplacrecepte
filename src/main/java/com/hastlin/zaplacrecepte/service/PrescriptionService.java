@@ -110,6 +110,7 @@ public class PrescriptionService {
         PrescriptionEntity prescriptionEntity = optionalPrescriptionEntity.get();
         if (updateEntity.getStatus().equals("COMPLETED")) {
             sendPrescriptionNumber(updateEntity);
+            paymentService.sendPaymentToPartner(prescriptionEntity);
         } else if (updateEntity.getStatus().equals("CANCELED")) {
             paymentService.cancelPayment(prescriptionEntity);
         }

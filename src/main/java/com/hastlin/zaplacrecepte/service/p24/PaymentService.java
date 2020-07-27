@@ -14,6 +14,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.Collections;
@@ -43,7 +44,12 @@ public class PaymentService {
     @Value("${p24.continueUrl}")
     private String continueUrl;
 
-    private static final int TOTAL_AMOUNT = 4500;
+    @Value("${p24.splitPaymentUrl:}")
+    private String splitPaymentUrl;
+
+    private static final int TOTAL_AMOUNT = 3000;
+    private static final int AMOUNT_FOR_PARTNER = 2700;
+    private static final int PARTNER_ID = 119310;
 
     public Payment createPayment(String email) {
 
@@ -106,6 +112,39 @@ public class PaymentService {
         log.info("About to cancel payment on {} with data={}", this.host + "/api/v1/transaction/refund", p24CancelRequestDto.getBody());
         ResponseEntity<String> response = restTemplate.exchange(this.host + "/api/v1/transaction/refund", HttpMethod.POST, p24CancelRequestDto, String.class);
         log.info("Cancelled payment with orderId {} with response {}", prescriptionEntity.getOrderId(), response.getBody());
+    }
+
+    public void sendPaymentToPartner(PrescriptionEntity prescriptionEntity) {
+        if (!StringUtils.isEmpty(splitPaymentUrl)) {
+            String splitPaymentRequestBody = "<soapenv:Envelope xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:php=\"https://secure.przelewy24.pl/external/118607.php\" xmlns:soap-enc=\"http://schemas.xmlsoap.org/soap/encoding/\">\n" +
+                    "   <soapenv:Header/>\n" +
+                    "   <soapenv:Body>\n" +
+                    "      <php:DispatchTransaction soapenv:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">\n" +
+                    "         <login xsi:type=\"xsd:string\">" + clientId + "</login>\n" +
+                    "         <pass xsi:type=\"xsd:string\">" + apiKey + "</pass>\n" +
+                    "         <batchId xsi:type=\"xsd:int\">" + prescriptionEntity.getOrderId() + "</batchId>\n" +
+                    "         <details xsi:type=\"php:ArrayOfDispatch\" soap-enc:arrayType=\"php:Dispatch[]\">\n" +
+                    "\t\t<Dispatch>\n" +
+                    "\t\t<orderId type=\"xsd:int\">" + prescriptionEntity.getOrderId() + "</orderId>\n" +
+                    "\t\t<sessionId type=\"xsd:string\">" + prescriptionEntity.getPaymentToken() + "</sessionId>\n" +
+                    "\t\t<sellerId type=\"xsd:int\">" + PARTNER_ID + "</sellerId>\n" +
+                    "\t\t<amount type=\"xsd:int\">" + AMOUNT_FOR_PARTNER + "</amount>\n" +
+                    "\t\t</Dispatch>\n" +
+                    "         </details>\n" +
+                    "      </php:DispatchTransaction>\n" +
+                    "   </soapenv:Body>\n" +
+                    "</soapenv:Envelope>";
+
+            RestTemplate restTemplate = new RestTemplate();
+            HttpHeaders headers = new HttpHeaders();
+            headers.add("Content-Type", "text/xml;charset=UTF-8");
+            HttpEntity<String> splitPaymentRequest = new HttpEntity<>(splitPaymentRequestBody, headers);
+            log.info("About to send split payment on {} with data={}", this.splitPaymentUrl, splitPaymentRequest);
+            ResponseEntity<String> splitPaymentResponse = restTemplate.exchange(this.splitPaymentUrl, HttpMethod.POST, splitPaymentRequest, String.class);
+            log.info("Payment split for orderId {} with response {}", prescriptionEntity.getOrderId(), splitPaymentResponse.getBody());
+        } else {
+            log.info("Skip payment split as url is not provided");
+        }
     }
 
 }
