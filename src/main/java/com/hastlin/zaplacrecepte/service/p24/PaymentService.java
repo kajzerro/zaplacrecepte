@@ -47,8 +47,8 @@ public class PaymentService {
     @Value("${p24.splitPaymentUrl:}")
     private String splitPaymentUrl;
 
-    private static final int TOTAL_AMOUNT = 111;
-    private static final int AMOUNT_FOR_PARTNER = 11;
+    private static final int TOTAL_AMOUNT = 3000;
+    private static final int AMOUNT_FOR_PARTNER = 2700;
     private static final int PARTNER_ID = 119310;
 
     public Payment createPayment(String email) {
