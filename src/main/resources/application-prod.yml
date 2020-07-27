@@ -6,4 +6,5 @@ p24:
   notifyUrl: "https://api.zaplacrecepte.pl/payment/notification/p24/"
   continueUrl: "https://www.zaplacrecepte.pl/thankyou"
   shortPaymentLink: "https://www.zaplacrecepte.pl/r/"
+  splitPaymentUrl: "https://secure.przelewy24.pl/external/118607.php"
 
