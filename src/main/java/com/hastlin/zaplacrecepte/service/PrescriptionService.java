@@ -111,7 +111,7 @@ public class PrescriptionService {
         if (updateEntity.getStatus().equals("COMPLETED")) {
             sendPrescriptionNumber(updateEntity);
             paymentService.sendPaymentToPartner(prescriptionEntity);
-        } else if (updateEntity.getStatus().equals("CANCELED")) {
+        } else if (prescriptionEntity.getStatus().equals("WAITING_FOR_CONFIRMATION") && updateEntity.getStatus().equals("CANCELED")) {
             paymentService.cancelPayment(prescriptionEntity);
         }
         prescriptionEntity.setFirstName(updateEntity.getFirstName());
