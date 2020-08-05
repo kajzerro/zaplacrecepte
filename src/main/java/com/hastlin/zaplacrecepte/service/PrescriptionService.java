@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestClientException;
 
 import javax.mail.MessagingException;
@@ -109,7 +110,11 @@ public class PrescriptionService {
 
         PrescriptionEntity prescriptionEntity = optionalPrescriptionEntity.get();
         if (updateEntity.getStatus().equals("COMPLETED")) {
-            sendPrescriptionNumber(updateEntity);
+            if (!StringUtils.isEmpty(prescriptionEntity.getPrescriptionNumber())) {
+                sendPrescriptionNumber(updateEntity);
+            } else {
+                log.warn("Prescription {} changed to COMPLETED without prescription number filled", prescriptionEntity.getId());
+            }
             paymentService.sendPaymentToPartner(prescriptionEntity);
         } else if (prescriptionEntity.getStatus().equals("WAITING_FOR_CONFIRMATION") && updateEntity.getStatus().equals("CANCELED")) {
             paymentService.cancelPayment(prescriptionEntity);
