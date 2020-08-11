@@ -110,7 +110,7 @@ public class PrescriptionService {
 
         PrescriptionEntity prescriptionEntity = optionalPrescriptionEntity.get();
         if (updateEntity.getStatus().equals("COMPLETED")) {
-            if (!StringUtils.isEmpty(prescriptionEntity.getPrescriptionNumber())) {
+            if (!StringUtils.isEmpty(updateEntity.getPrescriptionNumber())) {
                 sendPrescriptionNumber(updateEntity);
             } else {
                 log.warn("Prescription {} changed to COMPLETED without prescription number filled", prescriptionEntity.getId());
