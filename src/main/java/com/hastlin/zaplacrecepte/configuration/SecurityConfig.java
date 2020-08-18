@@ -1,6 +1,7 @@
 package com.hastlin.zaplacrecepte.configuration;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -28,13 +29,19 @@ import java.util.Collections;
 @Slf4j
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
+    @Value("${security.login}")
+    private String login;
+
+    @Value("${security.password}")
+    private String password;
+
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
         PasswordEncoder encoder =
                 PasswordEncoderFactories.createDelegatingPasswordEncoder();
         auth.inMemoryAuthentication()
-                .withUser("drkrzystyniak")
-                .password(encoder.encode("jankes"))
+                .withUser(login)
+                .password(encoder.encode(password))
                 .roles("USER");
     }
 
