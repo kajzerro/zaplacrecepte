@@ -8,3 +8,6 @@ p24:
   shortPaymentLink: "https://www.zaplacrecepte.pl/r/"
   splitPaymentUrl: "https://secure.przelewy24.pl/external/118607.php"
 
+security:
+  login: drkrzystyniak
+  password: jankes
