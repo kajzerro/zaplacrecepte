@@ -12,6 +12,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 @Component
 @Slf4j
@@ -32,8 +33,9 @@ public class PaymentReminderScheduledTask {
 	public void reportCurrentTime() {
 		log.info("Starting job to remind about unpaid prescriptions");
 		List<PrescriptionEntity> unpaidPrescriptionsFromYesterday = prescriptionRepository.findByCreateDateTimeBetweenAndStatusEquals(TimeUtils.yesterdaysMidnight(), TimeUtils.yesterdays23h59m(), STATUS_UNPAID);
+		log.info("Found {} unapaid prescriptions, unpaid ids are: {}", unpaidPrescriptionsFromYesterday.size(), unpaidPrescriptionsFromYesterday.stream().map(pe -> pe.getId()).collect(Collectors.toList()));
 		unpaidPrescriptionsFromYesterday.forEach(sendReminder());
-		log.info("Ended job to remind about unpaid prescriptions, found {} unapaid prescriptions", unpaidPrescriptionsFromYesterday.size());
+		log.info("Ended job to remind about unpaid prescriptions");
 	}
 
 	private Consumer<PrescriptionEntity> sendReminder() {
