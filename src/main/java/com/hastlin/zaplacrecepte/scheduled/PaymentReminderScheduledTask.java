@@ -6,7 +6,6 @@ import com.hastlin.zaplacrecepte.service.PrescriptionService;
 import com.hastlin.zaplacrecepte.utils.TimeUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -19,9 +18,6 @@ import java.util.stream.Collectors;
 public class PaymentReminderScheduledTask {
 
 	private final static String STATUS_UNPAID = "NEW";
-
-	@Value("${paymentReminder.cronExpression}")
-	String cronExpression;
 
 	@Autowired
 	private PrescriptionRepository prescriptionRepository;
