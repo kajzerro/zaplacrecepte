@@ -16,7 +16,6 @@ import javax.mail.MessagingException;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 
 @Service
@@ -51,14 +50,18 @@ public class PrescriptionService {
             Payment payment = paymentService.createPayment(prescriptionEntity.getEmail());
             prescriptionEntity.setOrderUrl(payment.getOrderUrl());
             prescriptionEntity.setPaymentToken(payment.getPaymentToken());
-            sendEmailWithPaymentRequest(prescriptionEntity);
-            sendSmsWithPaymentRequest(prescriptionEntity);
+            sendPaymentRequestsViaEmailAndSms(prescriptionEntity);
         }
         catch (PaymentException | RestClientException e) {
             log.error("Communication with payment provider failed: {}", e.getMessage());
             prescriptionEntity.addError("P24: " + this.actualDateTime() + " " + e.getMessage());
         }
         this.prescriptionRepository.save(prescriptionEntity);
+    }
+
+    public void sendPaymentRequestsViaEmailAndSms(PrescriptionEntity prescriptionEntity) {
+        sendEmailWithPaymentRequest(prescriptionEntity);
+        sendSmsWithPaymentRequest(prescriptionEntity);
     }
 
     private void sendSmsWithPaymentRequest(PrescriptionEntity prescriptionEntity) {
@@ -81,10 +84,10 @@ public class PrescriptionService {
     }
 
 
-    public String actualDateTime() {
+    public ZonedDateTime actualDateTime() {
         LocalDateTime localDateTime = LocalDateTime.now();
         ZonedDateTime zonedDateTime = ZonedDateTime.of(localDateTime, ZoneId.of("Europe/Warsaw"));
-        return zonedDateTime.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+        return zonedDateTime;
     }
 
     public PrescriptionEntity getPrescription(String id) {
