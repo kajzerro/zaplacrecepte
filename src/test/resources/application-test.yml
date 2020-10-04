@@ -6,3 +6,6 @@ p24:
   notifyUrl: "https://api.demo.zaplacrecepte.pl/payment/notification/p24/"
   continueUrl: "https://demo.zaplacrecepte.pl/thankyou"
   shortPaymentLink: "https://api.demo.zaplacrecepte.pl/r/"
+
+paymentReminder:
+  cronExpression: 1,11,21,31,41,51 * * * * ?
