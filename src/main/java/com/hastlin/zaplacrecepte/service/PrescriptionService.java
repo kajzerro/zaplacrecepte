@@ -25,7 +25,7 @@ public class PrescriptionService {
     private static final String STATUS_NEW = "NEW";
     private static final String MAIL_SUBJECT = "RECEPTA";
     private static final String MAIL_REQUEST_PAYMENT_TEXT = "Dr Marek Krzystyniak prosi o oplacenie recepty: ";
-    private static final String MAIL_WITH_PRESCRIPTION_TEXT = "Numer recepty to: ";
+    private static final String MAIL_WITH_PRESCRIPTION_TEXT = "Recepta została wystawiona. Kod: %s. Zrealizujesz receptę w aptece podając kod i numer PESEL.";
 
     @Value("${p24.shortPaymentLink}")
     private String shortPaymentLink;
@@ -135,18 +135,25 @@ public class PrescriptionService {
     }
 
     private void sendPrescriptionNumber(PrescriptionEntity prescriptionEntity) {
+        String prescriptionReadyMessage = String.format(MAIL_WITH_PRESCRIPTION_TEXT, prescriptionEntity.getPrescriptionNumber());
         try {
-            this.emailService.sendSimpleMessage(prescriptionEntity.getEmail(), MAIL_SUBJECT, MAIL_WITH_PRESCRIPTION_TEXT + prescriptionEntity.getPrescriptionNumber());
+            this.emailService.sendSimpleMessage(prescriptionEntity.getEmail(), MAIL_SUBJECT, prescriptionReadyMessage);
         } catch (MessagingException | RuntimeException e) {
             log.error("Email could not be delivered: {}", e.getMessage());
             prescriptionEntity.addError("Email: " + this.actualDateTime() + " " + e.getMessage());
         }
         try {
-            this.smsService.sendSms(MAIL_WITH_PRESCRIPTION_TEXT + prescriptionEntity.getPrescriptionNumber(), prescriptionEntity.getPhoneNumber(), MAIL_SUBJECT);
+            this.smsService.sendSms(prescriptionReadyMessage, prescriptionEntity.getPhoneNumber(), MAIL_SUBJECT);
         }
         catch (RuntimeException e) {
             log.error("Sending sms failed: {}", e.getMessage());
             prescriptionEntity.addError("SMS: " + this.actualDateTime() + " " + e.getMessage());
         }
+    }
+
+    public static void main(String[] args) {
+        PrescriptionEntity prescriptionEntity = new PrescriptionEntity();
+        prescriptionEntity.setPrescriptionNumber("2345");
+        System.out.println(String.format(MAIL_WITH_PRESCRIPTION_TEXT, prescriptionEntity.getPrescriptionNumber()));
     }
 }
