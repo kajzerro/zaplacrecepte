@@ -24,8 +24,8 @@ public class PrescriptionService {
 
     private static final String STATUS_NEW = "NEW";
     private static final String MAIL_SUBJECT = "RECEPTA";
-    private static final String MAIL_REQUEST_PAYMENT_TEXT = "Dr Marek Krzystyniak prosi o oplacenie recepty: ";
-    private static final String MAIL_WITH_PRESCRIPTION_TEXT = "Recepta została wystawiona. Kod: %s. Zrealizujesz receptę w aptece podając kod i numer PESEL.";
+    private static final String MAIL_REQUEST_PAYMENT_TEXT = "Dr Adam Dyrda prosi o oplacenie recepty: ";
+    private static final String MAIL_WITH_PRESCRIPTION_TEXT = "Recepta zostala wystawiona. Kod: %s. Zrealizujesz recepte w aptece podajac kod i numer PESEL.";
 
     @Value("${p24.shortPaymentLink}")
     private String shortPaymentLink;
