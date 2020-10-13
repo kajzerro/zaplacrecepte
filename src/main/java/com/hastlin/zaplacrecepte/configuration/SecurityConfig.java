@@ -60,7 +60,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .invalidateHttpSession(true)
                 .deleteCookies("JSESSIONID").and()
                 .authorizeRequests()
-                .antMatchers("/api/prescriptions/client/*").permitAll()
+                .antMatchers("/api/prescriptions/client/*", "/api/contact").permitAll()
                 .anyRequest().authenticated().and()
                 .httpBasic().authenticationEntryPoint(authenticationEntryPoint());
     }
