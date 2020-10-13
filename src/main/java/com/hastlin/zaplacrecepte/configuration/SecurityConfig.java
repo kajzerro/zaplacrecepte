@@ -47,7 +47,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     public void configure(WebSecurity web) {
-        web.ignoring().antMatchers("/mock/**", "/payment/notification/p24/*", "/api/contact");
+        web.ignoring().antMatchers("/mock/**", "/payment/notification/p24/*");
     }
 
     @Override
@@ -60,7 +60,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .invalidateHttpSession(true)
                 .deleteCookies("JSESSIONID").and()
                 .authorizeRequests()
-                .antMatchers("/api/prescriptions/client/*").permitAll()
+                .antMatchers("/api/prescriptions/client/*", "/api/contact").permitAll()
                 .anyRequest().authenticated().and()
                 .httpBasic().authenticationEntryPoint(authenticationEntryPoint());
     }
