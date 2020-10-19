@@ -1,3 +1,18 @@
+spring:
+  datasource:
+    type: com.zaxxer.hikari.HikariDataSource
+    url: jdbc:mysql://database-zaplacrecepte-notencrypted.cknwhegghgoz.eu-west-2.rds.amazonaws.com:3306/zaplacrecepte_prod
+    hikari:
+      connection-timeout: 60000
+      maximum-pool-size: 20
+      minimum-idle: 10
+      idle-timeout: 10000
+      poolName: HikariPool
+      jdbcUrl: jdbc:mysql://database-zaplacrecepte-notencrypted.cknwhegghgoz.eu-west-2.rds.amazonaws.com:3306/zaplacrecepte_prod
+      username: user_prod
+      password: ${DB_PASSWORD}
+      driverClassName: com.mysql.cj.jdbc.Driver
+
 p24:
   host: "https://secure.przelewy24.pl"
   clientId: 118607

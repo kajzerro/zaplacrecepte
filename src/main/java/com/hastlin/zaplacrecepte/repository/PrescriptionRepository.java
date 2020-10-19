@@ -1,15 +1,13 @@
 package com.hastlin.zaplacrecepte.repository;
 
 import com.hastlin.zaplacrecepte.model.entity.PrescriptionEntity;
-import org.socialsignin.spring.data.dynamodb.repository.EnableScan;
-import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
 
-@EnableScan
-public interface PrescriptionRepository extends CrudRepository<PrescriptionEntity, String> {
+public interface PrescriptionRepository extends JpaRepository<PrescriptionEntity, String> {
 
     Optional<PrescriptionEntity> findById(String id);
 

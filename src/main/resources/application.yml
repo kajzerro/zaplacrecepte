@@ -5,6 +5,18 @@ security:
   login: test
   password: test
 
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: validate
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+    open-in-view: true
+
 p24:
   host: "https://sandbox.przelewy24.pl"
   clientId: 118607

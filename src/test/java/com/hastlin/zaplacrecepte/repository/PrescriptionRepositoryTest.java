@@ -17,8 +17,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-import static junit.framework.Assert.assertEquals;
 import static junit.framework.TestCase.fail;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = ZaplacrecepteApplication.class)
@@ -39,7 +40,8 @@ public class PrescriptionRepositoryTest {
     public void should_save_record() {
         PrescriptionEntity prescriptionEntity = PrescriptionEntity.builder().email("osa@osa.pl").phoneNumber("80768493").createDateTime(ZonedDateTime.now()).lastName("OSA").build();
         repository.save(prescriptionEntity);
-        List<PrescriptionEntity> result = (List<PrescriptionEntity>) repository.findAll();
+        List<PrescriptionEntity> result = repository.findAll();
+        assertFalse(result.isEmpty());
     }
 
     @Test
@@ -48,7 +50,8 @@ public class PrescriptionRepositoryTest {
         repository.save(prescriptionEntity);
         PrescriptionEntity prescriptionEntity2 = PrescriptionEntity.builder().remarks("Przedłużenie recepty").status("paid").email("osa@osa.pl").phoneNumber("80768493").lastName("OSA").build();
         repository.save(prescriptionEntity2);
-        List<PrescriptionEntity> result = (List<PrescriptionEntity>) repository.findAll();
+        List<PrescriptionEntity> result = repository.findAll();
+        assertFalse(result.isEmpty());
     }
 
     @Test
@@ -94,7 +97,7 @@ public class PrescriptionRepositoryTest {
                 .status("NEW").build();
         //when
         repository.saveAll(Arrays.asList(prescriptionEntity, prescriptionEntity2, prescriptionEntity3, prescriptionEntity4, prescriptionEntity5));
-        List<PrescriptionEntity> prescriptionEntities = repository.findByCreateDateTimeBetweenAndStatusEquals(ZonedDateTime.of(2020, 9, 25, 0, 0, 0, 0, ZoneId.of("Europe/Warsaw")), ZonedDateTime.of(2020, 9, 25, 23, 59, 59, 999999999, ZoneId.of("Europe/Warsaw")), "NEW");
+        List<PrescriptionEntity> prescriptionEntities = repository.findByCreateDateTimeBetweenAndStatusEquals(ZonedDateTime.of(2020, 9, 25, 0, 0, 0, 0, ZoneId.of("Europe/Warsaw")), ZonedDateTime.of(2020, 9, 25, 23, 59, 59, 999999000, ZoneId.of("Europe/Warsaw")), "NEW");
 
         //then
         assertEquals(3, prescriptionEntities.size());
@@ -103,7 +106,7 @@ public class PrescriptionRepositoryTest {
     }
 
     private long countAllEntitiesWithStatusEquals(List<PrescriptionEntity> prescriptionEntities, String expectedStatus) {
-        return prescriptionEntities.stream().map(pe -> pe.getStatus()).filter(status -> status.equals(expectedStatus)).count();
+        return prescriptionEntities.stream().map(PrescriptionEntity::getStatus).filter(status -> status.equals(expectedStatus)).count();
     }
 
     private long countAllEntitiesWithDayOfMonthEquals(List<PrescriptionEntity> prescriptionEntities, int expectedDays) {
