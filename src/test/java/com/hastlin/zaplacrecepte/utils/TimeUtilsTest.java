@@ -26,10 +26,10 @@ public class TimeUtilsTest {
         assertEquals(TimeUtils.yesterdaysMidnight().getDayOfMonth(), TimeUtils.yesterdays23h59m().getDayOfMonth());
         assertEquals(TimeUtils.yesterdaysMidnight().getMonthValue(), TimeUtils.yesterdays23h59m().getMonthValue());
         assertEquals(TimeUtils.yesterdaysMidnight().getYear(), TimeUtils.yesterdays23h59m().getYear());
-        assertEquals(TimeUtils.yesterdays23h59m().getHour() - TimeUtils.yesterdaysMidnight().getHour(), 23);
-        assertEquals(TimeUtils.yesterdays23h59m().getMinute() - TimeUtils.yesterdaysMidnight().getMinute(), 59);
-        assertEquals(TimeUtils.yesterdays23h59m().getSecond() - TimeUtils.yesterdaysMidnight().getSecond(), 59);
-        assertEquals(TimeUtils.yesterdays23h59m().getNano() - TimeUtils.yesterdaysMidnight().getNano(), 999999999);
+        assertEquals(23, TimeUtils.yesterdays23h59m().getHour() - TimeUtils.yesterdaysMidnight().getHour());
+        assertEquals(59, TimeUtils.yesterdays23h59m().getMinute() - TimeUtils.yesterdaysMidnight().getMinute());
+        assertEquals(59, TimeUtils.yesterdays23h59m().getSecond() - TimeUtils.yesterdaysMidnight().getSecond());
+        assertEquals(999999000, TimeUtils.yesterdays23h59m().getNano() - TimeUtils.yesterdaysMidnight().getNano());
     }
 
 }

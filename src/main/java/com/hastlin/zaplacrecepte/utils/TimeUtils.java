@@ -6,8 +6,11 @@ import java.time.ZonedDateTime;
 
 public class TimeUtils {
 
+    private TimeUtils() {
+    }
+
     public static ZonedDateTime yesterdays23h59m() {
-        return yesterdaysMidnight().plusHours(23).plusMinutes(59).plusSeconds(59).plusNanos(999999999);
+        return yesterdaysMidnight().plusHours(23).plusMinutes(59).plusSeconds(59).plusNanos(999999000);
     }
 
     public static ZonedDateTime yesterdaysMidnight() {

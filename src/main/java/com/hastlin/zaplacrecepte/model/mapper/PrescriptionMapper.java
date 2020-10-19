@@ -4,6 +4,8 @@ import com.hastlin.zaplacrecepte.model.dto.PrescriptionDTO;
 import com.hastlin.zaplacrecepte.model.entity.PrescriptionEntity;
 import org.springframework.stereotype.Service;
 
+import java.time.format.DateTimeFormatter;
+
 /**
  * Created by mateuszkaszyk on 18/05/2020.
  */
@@ -35,7 +37,7 @@ public class PrescriptionMapper {
                 .email(prescriptionEntity.getEmail())
                 .phoneNumber(prescriptionEntity.getPhoneNumber())
                 .status(prescriptionEntity.getStatus())
-                .createDateTime(prescriptionEntity.getCreateDateTime().toString())
+                .createDateTime(prescriptionEntity.getCreateDateTime().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME))
                 .prescriptionNumber(prescriptionEntity.getPrescriptionNumber())
                 .orderUrl(prescriptionEntity.getOrderUrl())
                 .build();
