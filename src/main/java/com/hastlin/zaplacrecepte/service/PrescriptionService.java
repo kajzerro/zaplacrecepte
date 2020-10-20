@@ -1,6 +1,7 @@
 package com.hastlin.zaplacrecepte.service;
 
 import com.hastlin.zaplacrecepte.model.entity.PrescriptionEntity;
+import com.hastlin.zaplacrecepte.model.entity.UserEntity;
 import com.hastlin.zaplacrecepte.repository.PrescriptionRepository;
 import com.hastlin.zaplacrecepte.service.exception.PaymentException;
 import com.hastlin.zaplacrecepte.service.p24.Payment;
@@ -8,6 +9,7 @@ import com.hastlin.zaplacrecepte.service.p24.PaymentService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestClientException;
@@ -43,6 +45,8 @@ public class PrescriptionService {
     private SmsService smsService;
 
     public void createNewPrescription(PrescriptionEntity prescriptionEntity) {
+        UserEntity userEntity = (UserEntity) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        prescriptionEntity.setOwnerId(userEntity.getId());
         prescriptionEntity.setStatus(STATUS_NEW);
         prescriptionEntity.setCreateDateTime(actualDateTime());
         this.prescriptionRepository.save(prescriptionEntity);
@@ -100,11 +104,13 @@ public class PrescriptionService {
     }
 
     public Iterable<PrescriptionEntity> getAllPrescriptions() {
-        return this.prescriptionRepository.findAll();
+        UserEntity userEntity = (UserEntity) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        return this.prescriptionRepository.findByOwnerId(userEntity.getId());
     }
 
     public void updatePrescription(String id, PrescriptionEntity updateEntity) {
-        Optional<PrescriptionEntity> optionalPrescriptionEntity = this.prescriptionRepository.findById(id);
+        UserEntity userEntity = (UserEntity) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Optional<PrescriptionEntity> optionalPrescriptionEntity = this.prescriptionRepository.findByOwnerIdAndId(userEntity.getId(), id);
 
         if (!optionalPrescriptionEntity.isPresent()) {
             throw new RuntimeException("Prescription not found");
