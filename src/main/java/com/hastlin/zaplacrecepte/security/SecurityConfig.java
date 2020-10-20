@@ -2,7 +2,6 @@ package com.hastlin.zaplacrecepte.security;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -27,12 +26,6 @@ import java.util.Collections;
 @EnableWebSecurity
 @Slf4j
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
-
-    @Value("${security.login}")
-    private String login;
-
-    @Value("${security.password}")
-    private String password;
 
     @Autowired
     private CustomAuthenticationProvider authProvider;

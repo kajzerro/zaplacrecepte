@@ -22,9 +22,5 @@ p24:
   continueUrl: "https://demo.zaplacrecepte.pl/thankyou"
   shortPaymentLink: "https://demo.zaplacrecepte.pl/r/"
 
-security:
-  login: uitest
-  password: uiadmin
-
 paymentReminder:
   cronExpression: 0 30 15 ? * *
