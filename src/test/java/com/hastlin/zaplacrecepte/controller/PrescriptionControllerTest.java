@@ -1,21 +1,13 @@
 package com.hastlin.zaplacrecepte.controller;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
+import com.hastlin.zaplacrecepte.model.entity.UserEntity;
 import com.hastlin.zaplacrecepte.repository.PrescriptionRepository;
 import com.hastlin.zaplacrecepte.service.EmailService;
 import com.hastlin.zaplacrecepte.service.SmsService;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -23,9 +15,22 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.core.io.Resource;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
+
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
@@ -49,6 +54,16 @@ public class PrescriptionControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
+    @Before
+    public void setUp() {
+        Authentication authentication = Mockito.mock(Authentication.class);
+        UserEntity userEntity = UserEntity.builder().id("someUserId").build();
+        when(authentication.getPrincipal()).thenReturn(userEntity);
+        SecurityContext securityContext = Mockito.mock(SecurityContext.class);
+        Mockito.when(securityContext.getAuthentication()).thenReturn(authentication);
+        SecurityContextHolder.setContext(securityContext);
+    }
+
     @Test
     public void should_save_entity_and_get_200OK_when_everything_ok() throws Exception {
         doNothing().when(emailService).sendSimpleMessage(any(), any(), any());
@@ -58,12 +73,12 @@ public class PrescriptionControllerTest {
                         .characterEncoding(StandardCharsets.UTF_8.toString())
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
-                .andDo(print())
                 .andExpect(status().isOk())
                 .andReturn().getResponse();
 
-        verify(prescriptionRepository, times(2)).save(any());
 
+
+        verify(prescriptionRepository, times(2)).save(any());
     }
 
     @Test
@@ -76,7 +91,7 @@ public class PrescriptionControllerTest {
                 .andExpect(status().isOk())
                 .andReturn().getResponse();
 
-        verify(prescriptionRepository, times(1)).findAll();
+        verify(prescriptionRepository, times(1)).findByOwnerId(eq("someUserId"));
     }
 
 }
