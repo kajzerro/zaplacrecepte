@@ -1,13 +1,16 @@
 package com.hastlin.zaplacrecepte.service;
 
 import com.hastlin.zaplacrecepte.model.entity.PrescriptionEntity;
+import com.hastlin.zaplacrecepte.model.entity.UserEntity;
 import com.hastlin.zaplacrecepte.repository.PrescriptionRepository;
+import com.hastlin.zaplacrecepte.repository.UserRepository;
 import com.hastlin.zaplacrecepte.service.exception.PaymentException;
 import com.hastlin.zaplacrecepte.service.p24.Payment;
 import com.hastlin.zaplacrecepte.service.p24.PaymentService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestClientException;
@@ -24,7 +27,6 @@ public class PrescriptionService {
 
     private static final String STATUS_NEW = "NEW";
     private static final String MAIL_SUBJECT = "RECEPTA";
-    private static final String MAIL_REQUEST_PAYMENT_TEXT = "Dr Marek Krzystyniak prosi o oplacenie recepty: ";
     private static final String MAIL_WITH_PRESCRIPTION_TEXT = "Recepta zostala wystawiona. Kod: %s. Zrealizujesz recepte w aptece podajac kod i numer PESEL.";
 
     @Value("${p24.shortPaymentLink}")
@@ -32,6 +34,9 @@ public class PrescriptionService {
 
     @Autowired
     private PrescriptionRepository prescriptionRepository;
+
+    @Autowired
+    private UserRepository userRepository;
 
     @Autowired
     private PaymentService paymentService;
@@ -43,6 +48,8 @@ public class PrescriptionService {
     private SmsService smsService;
 
     public void createNewPrescription(PrescriptionEntity prescriptionEntity) {
+        UserEntity userEntity = (UserEntity) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        prescriptionEntity.setOwnerId(userEntity.getId());
         prescriptionEntity.setStatus(STATUS_NEW);
         prescriptionEntity.setCreateDateTime(actualDateTime());
         this.prescriptionRepository.save(prescriptionEntity);
@@ -60,13 +67,14 @@ public class PrescriptionService {
     }
 
     public void sendPaymentRequestsViaEmailAndSms(PrescriptionEntity prescriptionEntity) {
-        sendEmailWithPaymentRequest(prescriptionEntity);
-        sendSmsWithPaymentRequest(prescriptionEntity);
+        String requestMessage = userRepository.findById(prescriptionEntity.getOwnerId()).get().getSmsMessageRequestPayment();
+        sendEmailWithPaymentRequest(prescriptionEntity, requestMessage);
+        sendSmsWithPaymentRequest(prescriptionEntity, requestMessage);
     }
 
-    private void sendSmsWithPaymentRequest(PrescriptionEntity prescriptionEntity) {
+    private void sendSmsWithPaymentRequest(PrescriptionEntity prescriptionEntity, String requestMessage) {
         try {
-            this.smsService.sendSms(MAIL_REQUEST_PAYMENT_TEXT + this.shortPaymentLink + prescriptionEntity.getId(), prescriptionEntity.getPhoneNumber(), MAIL_SUBJECT);
+            this.smsService.sendSms(requestMessage + this.shortPaymentLink + prescriptionEntity.getId(), prescriptionEntity.getPhoneNumber(), MAIL_SUBJECT);
         }
         catch (RuntimeException e) {
             log.error("Sending sms failed: {}", e.getMessage());
@@ -74,9 +82,9 @@ public class PrescriptionService {
         }
     }
 
-    private void sendEmailWithPaymentRequest(PrescriptionEntity prescriptionEntity) {
+    private void sendEmailWithPaymentRequest(PrescriptionEntity prescriptionEntity, String requestMessage) {
         try {
-            this.emailService.sendSimpleMessage(prescriptionEntity.getEmail(), MAIL_SUBJECT, MAIL_REQUEST_PAYMENT_TEXT + this.shortPaymentLink + prescriptionEntity.getId());
+            this.emailService.sendSimpleMessage(prescriptionEntity.getEmail(), MAIL_SUBJECT, requestMessage + this.shortPaymentLink + prescriptionEntity.getId());
         } catch (MessagingException | RuntimeException e) {
             log.error("Email could not be delivered: {}", e.getMessage());
             prescriptionEntity.addError("Email: " + this.actualDateTime() + " " + e.getMessage());
@@ -100,11 +108,13 @@ public class PrescriptionService {
     }
 
     public Iterable<PrescriptionEntity> getAllPrescriptions() {
-        return this.prescriptionRepository.findAll();
+        UserEntity userEntity = (UserEntity) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        return this.prescriptionRepository.findByOwnerId(userEntity.getId());
     }
 
     public void updatePrescription(String id, PrescriptionEntity updateEntity) {
-        Optional<PrescriptionEntity> optionalPrescriptionEntity = this.prescriptionRepository.findById(id);
+        UserEntity userEntity = (UserEntity) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Optional<PrescriptionEntity> optionalPrescriptionEntity = this.prescriptionRepository.findByOwnerIdAndId(userEntity.getId(), id);
 
         if (!optionalPrescriptionEntity.isPresent()) {
             throw new RuntimeException("Prescription not found");
@@ -114,7 +124,7 @@ public class PrescriptionService {
         PrescriptionEntity prescriptionEntity = optionalPrescriptionEntity.get();
         if (updateEntity.getStatus().equals("COMPLETED")) {
             if (!StringUtils.isEmpty(updateEntity.getPrescriptionNumber())) {
-                sendPrescriptionNumber(updateEntity);
+                sendPrescriptionNumber(updateEntity, userEntity.getSmsMessageCompleted());
             } else {
                 log.warn("Prescription {} changed to COMPLETED without prescription number filled", prescriptionEntity.getId());
             }
@@ -134,8 +144,8 @@ public class PrescriptionService {
         prescriptionRepository.save(prescriptionEntity);
     }
 
-    private void sendPrescriptionNumber(PrescriptionEntity prescriptionEntity) {
-        String prescriptionReadyMessage = String.format(MAIL_WITH_PRESCRIPTION_TEXT, prescriptionEntity.getPrescriptionNumber());
+    private void sendPrescriptionNumber(PrescriptionEntity prescriptionEntity, String messageCompleted) {
+        String prescriptionReadyMessage = String.format(messageCompleted, prescriptionEntity.getPrescriptionNumber());
         try {
             this.emailService.sendSimpleMessage(prescriptionEntity.getEmail(), MAIL_SUBJECT, prescriptionReadyMessage);
         } catch (MessagingException | RuntimeException e) {
@@ -151,9 +161,4 @@ public class PrescriptionService {
         }
     }
 
-    public static void main(String[] args) {
-        PrescriptionEntity prescriptionEntity = new PrescriptionEntity();
-        prescriptionEntity.setPrescriptionNumber("2345");
-        System.out.println(String.format(MAIL_WITH_PRESCRIPTION_TEXT, prescriptionEntity.getPrescriptionNumber()));
-    }
 }

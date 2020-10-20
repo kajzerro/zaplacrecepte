@@ -2,6 +2,7 @@ package com.hastlin.zaplacrecepte.repository;
 
 import com.hastlin.zaplacrecepte.ZaplacrecepteApplication;
 import com.hastlin.zaplacrecepte.model.entity.PrescriptionEntity;
+import com.hastlin.zaplacrecepte.model.entity.UserEntity;
 import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -16,10 +17,10 @@ import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static junit.framework.TestCase.fail;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.*;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = ZaplacrecepteApplication.class)
@@ -31,9 +32,13 @@ public class PrescriptionRepositoryTest {
     @Autowired
     PrescriptionRepository repository;
 
+    @Autowired
+    UserRepository userRepository;
+
     @After
     public void clearUp() {
         repository.deleteAll();
+        userRepository.deleteAll();
     }
 
     @Test
@@ -64,6 +69,28 @@ public class PrescriptionRepositoryTest {
         catch (Exception e) {
             fail("Couldn't parse entity");
         }
+    }
+
+    @Test
+    public void should_find_all_the_prescriptions_from_one_doctor() {
+        //given
+        UserEntity userEntity1 = UserEntity.builder().username("user_osa").build();
+        userRepository.save(userEntity1);
+        UserEntity userEntity2 = UserEntity.builder().username("user_kajzer").build();
+        userRepository.save(userEntity2);
+        PrescriptionEntity prescriptionEntity = PrescriptionEntity.builder().email("osa@osa.pl").ownerId(userEntity1.getId()).createDateTime(ZonedDateTime.now().plusDays(10)).status("done").phoneNumber("8076876493").lastName("KAJZER").build();
+        repository.save(prescriptionEntity);
+        PrescriptionEntity prescriptionEntity2 = PrescriptionEntity.builder().ownerId(userEntity1.getId()).remarks("Przedłużenie recepty").status("paid").email("osa@osa.pl").phoneNumber("8076834493").lastName("ZGREDEK").build();
+        repository.save(prescriptionEntity2);
+        PrescriptionEntity prescriptionEntity3 = PrescriptionEntity.builder().ownerId(userEntity2.getId()).remarks("Przedłużenie recepty").status("paid").email("osa@osa.pl").phoneNumber("8074368493").lastName("OSA").build();
+        repository.save(prescriptionEntity3);
+        //when
+        List<PrescriptionEntity> result = repository.findByOwnerId(userEntity1.getId());
+        //then
+        assertEquals(2, result.size());
+        assertTrue(result.stream().map(PrescriptionEntity::getLastName).collect(Collectors.toList()).contains("ZGREDEK"));
+        assertTrue(result.stream().map(PrescriptionEntity::getLastName).collect(Collectors.toList()).contains("KAJZER"));
+        assertFalse(result.stream().map(PrescriptionEntity::getLastName).collect(Collectors.toList()).contains("OSA"));
     }
 
     @Test
