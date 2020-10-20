@@ -13,5 +13,7 @@ public interface PrescriptionRepository extends JpaRepository<PrescriptionEntity
 
     Optional<PrescriptionEntity> findByPaymentToken(String paymentToken);
 
+    List<PrescriptionEntity> findByOwnerId(String ownerId);
+
     List<PrescriptionEntity> findByCreateDateTimeBetweenAndStatusEquals(ZonedDateTime startDateTime, ZonedDateTime endDateTime, String status);
 }

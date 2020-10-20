@@ -1,6 +1,8 @@
 package com.hastlin.zaplacrecepte.controller;
 
 import com.hastlin.zaplacrecepte.model.dto.LoginResponseDto;
+import com.hastlin.zaplacrecepte.model.entity.UserEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -10,8 +12,13 @@ import org.springframework.web.bind.annotation.RestController;
 public class LoginController {
 
     @GetMapping
-    LoginResponseDto login() {
-        return LoginResponseDto.builder().message("OK").build();
+    public LoginResponseDto login() {
+        UserEntity userEntity = (UserEntity) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        return LoginResponseDto.builder()
+                .email(userEntity.getEmail())
+                .firstName(userEntity.getFirstName())
+                .lastName(userEntity.getLastName())
+                .build();
     }
 
 }

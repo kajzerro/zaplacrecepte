@@ -1,6 +1,7 @@
-package com.hastlin.zaplacrecepte.configuration;
+package com.hastlin.zaplacrecepte.security;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -10,8 +11,6 @@ import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.crypto.factory.PasswordEncoderFactories;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.www.BasicAuthenticationEntryPoint;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -35,14 +34,12 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Value("${security.password}")
     private String password;
 
+    @Autowired
+    private CustomAuthenticationProvider authProvider;
+
     @Override
-    protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-        PasswordEncoder encoder =
-                PasswordEncoderFactories.createDelegatingPasswordEncoder();
-        auth.inMemoryAuthentication()
-                .withUser(login)
-                .password(encoder.encode(password))
-                .roles("USER");
+    protected void configure(AuthenticationManagerBuilder auth) {
+        auth.authenticationProvider(authProvider);
     }
 
     @Override
@@ -86,7 +83,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                     throws IOException {
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 PrintWriter writer = response.getWriter();
-                writer.println("{\"message\":\""+authEx.getMessage()+"\"}");
+                writer.println("{\"message\":\"" + authEx.getMessage() + "\"}");
                 log.error(authEx.getMessage());
             }
 

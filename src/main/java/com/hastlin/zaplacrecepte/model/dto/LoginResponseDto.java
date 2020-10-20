@@ -11,5 +11,7 @@ import lombok.*;
 @AllArgsConstructor
 @EqualsAndHashCode
 public class LoginResponseDto {
-    private String message;
+    private String firstName;
+    private String lastName;
+    private String email;
 }

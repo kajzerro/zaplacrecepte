@@ -16,10 +16,10 @@ import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static junit.framework.TestCase.fail;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.*;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = ZaplacrecepteApplication.class)
@@ -64,6 +64,24 @@ public class PrescriptionRepositoryTest {
         catch (Exception e) {
             fail("Couldn't parse entity");
         }
+    }
+
+    @Test
+    public void should_find_all_the_prescriptions_from_one_doctor() {
+        //given
+        PrescriptionEntity prescriptionEntity = PrescriptionEntity.builder().email("osa@osa.pl").ownerId("123456").createDateTime(ZonedDateTime.now().plusDays(10)).status("done").phoneNumber("8076876493").lastName("KAJZER").build();
+        repository.save(prescriptionEntity);
+        PrescriptionEntity prescriptionEntity2 = PrescriptionEntity.builder().ownerId("123456").remarks("Przedłużenie recepty").status("paid").email("osa@osa.pl").phoneNumber("8076834493").lastName("ZGREDEK").build();
+        repository.save(prescriptionEntity2);
+        PrescriptionEntity prescriptionEntity3 = PrescriptionEntity.builder().ownerId("6543210").remarks("Przedłużenie recepty").status("paid").email("osa@osa.pl").phoneNumber("8074368493").lastName("OSA").build();
+        repository.save(prescriptionEntity3);
+        //when
+        List<PrescriptionEntity> result = repository.findByOwnerId("123456");
+        //then
+        assertEquals(2, result.size());
+        assertTrue(result.stream().map(PrescriptionEntity::getLastName).collect(Collectors.toList()).contains("ZGREDEK"));
+        assertTrue(result.stream().map(PrescriptionEntity::getLastName).collect(Collectors.toList()).contains("KAJZER"));
+        assertFalse(result.stream().map(PrescriptionEntity::getLastName).collect(Collectors.toList()).contains("OSA"));
     }
 
     @Test
