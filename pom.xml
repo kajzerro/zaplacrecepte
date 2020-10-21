@@ -54,11 +54,6 @@
             <version>8.0.20</version>
         </dependency>
         <dependency>
-            <groupId>io.github.dibog</groupId>
-            <artifactId>cloudwatch-logback-appender</artifactId>
-            <version>1.0.6</version>
-        </dependency>
-        <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <version>1.18.12</version>
