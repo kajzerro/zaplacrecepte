@@ -2,6 +2,7 @@ package com.hastlin.zaplacrecepte.controller;
 
 import com.hastlin.zaplacrecepte.model.entity.UserEntity;
 import com.hastlin.zaplacrecepte.repository.PrescriptionRepository;
+import com.hastlin.zaplacrecepte.repository.UserRepository;
 import com.hastlin.zaplacrecepte.service.EmailService;
 import com.hastlin.zaplacrecepte.service.SmsService;
 import org.junit.Before;
@@ -24,6 +25,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -43,6 +45,9 @@ public class PrescriptionControllerTest {
 
     @MockBean
     PrescriptionRepository prescriptionRepository;
+
+    @MockBean
+    UserRepository userRepository;
 
     @MockBean
     EmailService emailService;
@@ -67,6 +72,7 @@ public class PrescriptionControllerTest {
     @Test
     public void should_save_entity_and_get_200OK_when_everything_ok() throws Exception {
         doNothing().when(emailService).sendSimpleMessage(any(), any(), any());
+        when(userRepository.findById(anyString())).thenReturn(Optional.of(UserEntity.builder().smsMessageRequestPayment("Please pay us").build()));
         this.mockMvc.perform(
                 post("/api/prescriptions")
                         .content(Files.readAllBytes(prescriptionJson.getFile().toPath()))
