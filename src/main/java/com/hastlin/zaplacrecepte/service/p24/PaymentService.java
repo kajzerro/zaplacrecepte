@@ -119,19 +119,8 @@ public class PaymentService {
         log.info("Cancelled payment with orderId {} with response {}", prescriptionEntity.getOrderId(), response.getBody());
     }
 
-    public void sendSplitPayment(PrescriptionEntity prescriptionEntity) {
-        this.sendPaymentToPartner(prescriptionEntity);
-        this.sendPaymentToUs(prescriptionEntity);
-    }
-
-    private void sendPaymentToUs(PrescriptionEntity prescriptionEntity) {
-            String splitPaymentForUsRequestBody = preparePaymentSoapRequest(prescriptionEntity, OUR_ID, AMOUNT_FOR_US);
-            this.sendPayment(prescriptionEntity, splitPaymentForUsRequestBody);
-    }
-
-
-    private void sendPaymentToPartner(PrescriptionEntity prescriptionEntity) {
-        String splitPaymentToPartnerRequestBody = preparePaymentSoapRequest(prescriptionEntity, PARTNER_ID, AMOUNT_FOR_PARTNER);
+    public void sendPaymentToPartnerAndUs(PrescriptionEntity prescriptionEntity) {
+        String splitPaymentToPartnerRequestBody = preparePaymentSoapRequest(prescriptionEntity, PARTNER_ID, AMOUNT_FOR_PARTNER, OUR_ID, AMOUNT_FOR_US);
         this.sendPayment(prescriptionEntity, splitPaymentToPartnerRequestBody);
     }
 
@@ -146,7 +135,7 @@ public class PaymentService {
     }
 
 
-    private String preparePaymentSoapRequest(PrescriptionEntity prescriptionEntity, int accountId, int amountToSend) {
+    private String preparePaymentSoapRequest(PrescriptionEntity prescriptionEntity, int partnerAccountId, int partnerAmountToSend, int ourAccountId, int ourAmountToSend) {
         return "<soapenv:Envelope xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:php=\"https://secure.przelewy24.pl/external/118607.php\" xmlns:soap-enc=\"http://schemas.xmlsoap.org/soap/encoding/\">\n" +
                 "   <soapenv:Header/>\n" +
                 "   <soapenv:Body>\n" +
@@ -158,8 +147,14 @@ public class PaymentService {
                 "\t\t<Dispatch>\n" +
                 "\t\t<orderId type=\"xsd:int\">" + prescriptionEntity.getOrderId() + "</orderId>\n" +
                 "\t\t<sessionId type=\"xsd:string\">" + prescriptionEntity.getPaymentToken() + "</sessionId>\n" +
-                "\t\t<sellerId type=\"xsd:int\">" + accountId + "</sellerId>\n" +
-                "\t\t<amount type=\"xsd:int\">" + amountToSend + "</amount>\n" +
+                "\t\t<sellerId type=\"xsd:int\">" + partnerAccountId + "</sellerId>\n" +
+                "\t\t<amount type=\"xsd:int\">" + partnerAmountToSend + "</amount>\n" +
+                "\t\t</Dispatch>\n" +
+                "\t\t<Dispatch>\n" +
+                "\t\t<orderId type=\"xsd:int\">" + prescriptionEntity.getOrderId() + "</orderId>\n" +
+                "\t\t<sessionId type=\"xsd:string\">" + prescriptionEntity.getPaymentToken() + "</sessionId>\n" +
+                "\t\t<sellerId type=\"xsd:int\">" + ourAccountId + "</sellerId>\n" +
+                "\t\t<amount type=\"xsd:int\">" + ourAmountToSend + "</amount>\n" +
                 "\t\t</Dispatch>\n" +
                 "         </details>\n" +
                 "      </php:DispatchTransaction>\n" +
