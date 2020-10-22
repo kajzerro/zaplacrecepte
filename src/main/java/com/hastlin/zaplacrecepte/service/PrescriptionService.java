@@ -128,7 +128,7 @@ public class PrescriptionService {
             } else {
                 log.warn("Prescription {} changed to COMPLETED without prescription number filled", prescriptionEntity.getId());
             }
-            paymentService.sendSplitPayment(prescriptionEntity);
+            paymentService.sendPaymentToPartnerAndUs(prescriptionEntity);
         } else if (prescriptionEntity.getStatus().equals("WAITING_FOR_CONFIRMATION") && updateEntity.getStatus().equals("CANCELED")) {
             paymentService.cancelPayment(prescriptionEntity);
         }
