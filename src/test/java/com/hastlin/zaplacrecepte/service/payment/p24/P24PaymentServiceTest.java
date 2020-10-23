@@ -1,8 +1,9 @@
-package com.hastlin.zaplacrecepte.service.p24;
+package com.hastlin.zaplacrecepte.service.payment.p24;
 
 import com.hastlin.zaplacrecepte.ZaplacrecepteApplication;
 import com.hastlin.zaplacrecepte.model.entity.PrescriptionEntity;
 import com.hastlin.zaplacrecepte.model.entity.UserEntity;
+import com.hastlin.zaplacrecepte.service.payment.Payment;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -26,10 +27,10 @@ import static org.mockito.Mockito.*;
 @SpringBootTest(classes = ZaplacrecepteApplication.class)
 @WebAppConfiguration
 @ActiveProfiles("test")
-public class PaymentServiceTest {
+public class P24PaymentServiceTest {
 
     @SpyBean
-    PaymentService paymentService;
+    P24PaymentService paymentService;
 
     @Before
     public void setUp() {

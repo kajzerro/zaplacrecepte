@@ -1,4 +1,4 @@
-package com.hastlin.zaplacrecepte.model.dto.p24;
+package com.hastlin.zaplacrecepte.model.dto.payment.p24;
 
 import lombok.*;
 

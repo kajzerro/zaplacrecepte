@@ -1,8 +1,8 @@
-package com.hastlin.zaplacrecepte.service.p24;
+package com.hastlin.zaplacrecepte.service.payment.p24;
 
-import com.hastlin.zaplacrecepte.model.dto.p24.P24StatusConfirmationRequestDto;
-import com.hastlin.zaplacrecepte.model.dto.p24.P24StatusConfirmationResponseDto;
-import com.hastlin.zaplacrecepte.model.dto.p24.P24StatusDto;
+import com.hastlin.zaplacrecepte.model.dto.payment.p24.P24StatusConfirmationRequestDto;
+import com.hastlin.zaplacrecepte.model.dto.payment.p24.P24StatusConfirmationResponseDto;
+import com.hastlin.zaplacrecepte.model.dto.payment.p24.P24StatusDto;
 import com.hastlin.zaplacrecepte.model.entity.PrescriptionEntity;
 import com.hastlin.zaplacrecepte.repository.PrescriptionRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -22,7 +22,7 @@ import static org.apache.commons.codec.digest.MessageDigestAlgorithms.SHA_384;
 
 @Service
 @Slf4j
-public class StatusPaymentService {
+public class P24StatusPaymentService {
 
     @Value("${p24.crc}")
     private String crc;
@@ -45,7 +45,7 @@ public class StatusPaymentService {
         if (optionalPrescriptionEntity.isPresent()) {
             PrescriptionEntity prescriptionEntity = optionalPrescriptionEntity.get();
             prescriptionEntity.setStatus("WAITING_FOR_CONFIRMATION");
-            prescriptionEntity.setOrderId(p24StatusDto.getOrderId());
+            prescriptionEntity.setOrderId(String.valueOf(p24StatusDto.getOrderId()));
             prescriptionRepository.save(prescriptionEntity);
             confirmStatus(p24StatusDto);
         } else {

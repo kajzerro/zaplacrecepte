@@ -1,10 +1,6 @@
-package com.hastlin.zaplacrecepte.model.dto.p24;
+package com.hastlin.zaplacrecepte.model.dto.payment.p24;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Data
 @Builder

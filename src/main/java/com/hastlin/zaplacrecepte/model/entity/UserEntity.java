@@ -54,6 +54,9 @@ public class UserEntity {
     @Column(name = "SMS_MESSAGE_COMPLETED")
     private String smsMessageCompleted;
 
+    @Column(name = "PAYMENT_PROVIDER")
+    private String paymentProvider;
+
     @Column(name = "CREATE_DATETIME")
     private ZonedDateTime createDateTime;
 

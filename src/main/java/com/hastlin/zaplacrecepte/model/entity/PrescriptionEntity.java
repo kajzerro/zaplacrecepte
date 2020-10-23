@@ -54,7 +54,7 @@ public class PrescriptionEntity {
     private ZonedDateTime createDateTime;
 
     @Column(name = "ORDER_ID")
-    private int orderId;
+    private String orderId;
 
     @Column(name = "PAYMENT_TOKEN")
     private String paymentToken;
