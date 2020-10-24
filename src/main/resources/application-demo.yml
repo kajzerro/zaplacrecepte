@@ -19,8 +19,10 @@ p24:
   crc: "373004a537f5c0f9"
   apiKey: "3c233647d304fa4ee9b7cf1c76529a99"
   notifyUrl: "https://api.demo.zaplacrecepte.pl/payment/notification/p24/"
-  continueUrl: "https://demo.zaplacrecepte.pl/thankyou"
-  shortPaymentLink: "https://demo.zaplacrecepte.pl/r/"
+  prescriptionBasedContinueUrl: "https://demo.zaplacrecepte.pl/prescription/thankyou"
+  serviceBasedContinueUrl: "https://demo.zaplacrecepte.pl/service/thankyou"
+  prescriptionBasedShortPaymentLink: "https://demo.zaplacrecepte.pl/p/"
+  serviceBasedShortPaymentLink: "https://demo.zaplacrecepte.pl/s/"
 
 paymentReminder:
   cronExpression: 0 30 15 ? * *

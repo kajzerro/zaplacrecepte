@@ -1,0 +1,27 @@
+ALTER TABLE `zaplacrecepte_test`.`USER`
+    ADD COLUMN `CLIENT_TYPE` VARCHAR(64);
+ALTER TABLE `zaplacrecepte_demo`.`USER`
+    ADD COLUMN `CLIENT_TYPE` VARCHAR(64);
+ALTER TABLE `zaplacrecepte_prod`.`USER`
+    ADD COLUMN `CLIENT_TYPE` VARCHAR(64);
+
+ALTER TABLE `zaplacrecepte_test`.`PRESCRIPTION`
+    ADD COLUMN `PRICE` INTEGER;
+ALTER TABLE `zaplacrecepte_demo`.`PRESCRIPTION`
+    ADD COLUMN `PRICE` INTEGER;
+ALTER TABLE `zaplacrecepte_prod`.`PRESCRIPTION`
+    ADD COLUMN `PRICE` INTEGER;
+
+UPDATE `zaplacrecepte_test`.`PRESCRIPTION`
+SET PRICE=30;
+UPDATE `zaplacrecepte_demo`.`PRESCRIPTION`
+SET PRICE=30;
+UPDATE `zaplacrecepte_prod`.`PRESCRIPTION`
+SET PRICE=30;
+
+ALTER TABLE `zaplacrecepte_test`.`USER`
+    ADD COLUMN `DEFAULT_PRICE` INTEGER;
+ALTER TABLE `zaplacrecepte_demo`.`USER`
+    ADD COLUMN `DEFAULT_PRICE` INTEGER;
+ALTER TABLE `zaplacrecepte_prod`.`USER`
+    ADD COLUMN `DEFAULT_PRICE` INTEGER;

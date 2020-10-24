@@ -4,8 +4,8 @@ spring:
     url: jdbc:mysql://database-zaplacrecepte-notencrypted.cknwhegghgoz.eu-west-2.rds.amazonaws.com:3306/zaplacrecepte_test
     hikari:
       connection-timeout: 60000
-      maximum-pool-size: 20
-      minimum-idle: 10
+      maximum-pool-size: 2
+      minimum-idle: 1
       idle-timeout: 10000
       poolName: HikariPool
       jdbcUrl: jdbc:mysql://database-zaplacrecepte-notencrypted.cknwhegghgoz.eu-west-2.rds.amazonaws.com:3306/zaplacrecepte_test

@@ -7,6 +7,7 @@ import com.hastlin.zaplacrecepte.repository.UserRepository;
 import com.hastlin.zaplacrecepte.service.exception.PaymentException;
 import com.hastlin.zaplacrecepte.service.p24.Payment;
 import com.hastlin.zaplacrecepte.service.p24.PaymentService;
+import com.hastlin.zaplacrecepte.utils.FeatureToggleUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -26,11 +27,13 @@ import java.util.Optional;
 public class PrescriptionService {
 
     private static final String STATUS_NEW = "NEW";
-    private static final String MAIL_SUBJECT = "RECEPTA";
-    private static final String MAIL_WITH_PRESCRIPTION_TEXT = "Recepta zostala wystawiona. Kod: %s. Zrealizujesz recepte w aptece podajac kod i numer PESEL.";
+    private static final String MAIL_SUBJECT = "MojLekarz";
 
-    @Value("${p24.shortPaymentLink}")
-    private String shortPaymentLink;
+    @Value("${p24.prescriptionBasedShortPaymentLink}")
+    private String prescriptionBasedShortPaymentLink;
+
+    @Value("${p24.serviceBasedShortPaymentLink}")
+    private String serviceBasedShortPaymentLink;
 
     @Autowired
     private PrescriptionRepository prescriptionRepository;
@@ -52,9 +55,12 @@ public class PrescriptionService {
         prescriptionEntity.setOwnerId(userEntity.getId());
         prescriptionEntity.setStatus(STATUS_NEW);
         prescriptionEntity.setCreateDateTime(actualDateTime());
+        if (prescriptionEntity.getPrice() == null || FeatureToggleUtil.isPrescriptionBased()) {
+            prescriptionEntity.setPrice(userEntity.getDefaultPrice());
+        }
         this.prescriptionRepository.save(prescriptionEntity);
         try {
-            Payment payment = paymentService.createPayment(prescriptionEntity.getEmail());
+            Payment payment = paymentService.createPayment(prescriptionEntity.getEmail(), prescriptionEntity.getPrice());
             prescriptionEntity.setOrderUrl(payment.getOrderUrl());
             prescriptionEntity.setPaymentToken(payment.getPaymentToken());
             sendPaymentRequestsViaEmailAndSms(prescriptionEntity);
@@ -74,7 +80,8 @@ public class PrescriptionService {
 
     private void sendSmsWithPaymentRequest(PrescriptionEntity prescriptionEntity, String requestMessage) {
         try {
-            this.smsService.sendSms(requestMessage + this.shortPaymentLink + prescriptionEntity.getId(), prescriptionEntity.getPhoneNumber(), MAIL_SUBJECT);
+            String shortPaymentLink = FeatureToggleUtil.isServiceBased() ? this.serviceBasedShortPaymentLink : this.prescriptionBasedShortPaymentLink;
+            this.smsService.sendSms(requestMessage + shortPaymentLink + prescriptionEntity.getId(), prescriptionEntity.getPhoneNumber(), MAIL_SUBJECT);
         }
         catch (RuntimeException e) {
             log.error("Sending sms failed: {}", e.getMessage());
@@ -84,7 +91,8 @@ public class PrescriptionService {
 
     private void sendEmailWithPaymentRequest(PrescriptionEntity prescriptionEntity, String requestMessage) {
         try {
-            this.emailService.sendSimpleMessage(prescriptionEntity.getEmail(), MAIL_SUBJECT, requestMessage + this.shortPaymentLink + prescriptionEntity.getId());
+            String shortPaymentLink = FeatureToggleUtil.isServiceBased() ? this.serviceBasedShortPaymentLink : this.prescriptionBasedShortPaymentLink;
+            this.emailService.sendSimpleMessage(prescriptionEntity.getEmail(), MAIL_SUBJECT, requestMessage + shortPaymentLink + prescriptionEntity.getId());
         } catch (MessagingException | RuntimeException e) {
             log.error("Email could not be delivered: {}", e.getMessage());
             prescriptionEntity.addError("Email: " + this.actualDateTime() + " " + e.getMessage());
@@ -141,6 +149,7 @@ public class PrescriptionService {
         prescriptionEntity.setEmail(updateEntity.getEmail());
         prescriptionEntity.setStatus(updateEntity.getStatus());
         prescriptionEntity.setPrescriptionNumber(updateEntity.getPrescriptionNumber());
+        prescriptionEntity.setPrice(updateEntity.getPrice());
         prescriptionRepository.save(prescriptionEntity);
     }
 

@@ -9,6 +9,8 @@ import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import java.util.concurrent.TimeUnit;
+
 import static org.awaitility.Awaitility.await;
 import static org.mockito.Mockito.verify;
 
@@ -22,7 +24,7 @@ public class PaymentReminderScheduledTaskTest {
 
     @Test
     public void reportCurrentTime() {
-        await().atMost(Duration.TEN_SECONDS).untilAsserted(() -> {
+        await().atMost(new Duration(15, TimeUnit.SECONDS)).untilAsserted(() -> {
             verify(tasks, Mockito.atLeast(1)).reportCurrentTime();
         });
     }

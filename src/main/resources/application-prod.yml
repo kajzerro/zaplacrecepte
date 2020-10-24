@@ -19,8 +19,10 @@ p24:
   crc: "6cbf3f18bf0aba5b"
   apiKey: "ac64e455852ab6bc50fe54d1ed4baa93"
   notifyUrl: "https://api.zaplacrecepte.pl/payment/notification/p24/"
-  continueUrl: "https://www.zaplacrecepte.pl/thankyou"
-  shortPaymentLink: "https://www.zaplacrecepte.pl/r/"
+  prescriptionBasedContinueUrl: "https://www.zaplacrecepte.pl/prescription/thankyou"
+  serviceBasedContinueUrl: "https://www.zaplacrecepte.pl/service/thankyou"
+  prescriptionBasedShortPaymentLink: "https://www.zaplacrecepte.pl/p/"
+  serviceBasedShortPaymentLink: "https://www.zaplacrecepte.pl/s/"
   splitPaymentUrl: "https://secure.przelewy24.pl/external/118607.php"
 
 paymentReminder:

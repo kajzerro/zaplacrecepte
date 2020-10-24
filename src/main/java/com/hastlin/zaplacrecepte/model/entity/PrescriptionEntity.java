@@ -68,6 +68,9 @@ public class PrescriptionEntity {
     @Column(name = "OWNER_ID")
     private String ownerId;
 
+    @Column(name = "PRICE")
+    private Integer price;
+
     @Column(name = "ERRORS")
     @Type(type = "text")
     private String errors;
