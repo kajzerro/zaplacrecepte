@@ -18,6 +18,8 @@ public class LoginController {
                 .email(userEntity.getEmail())
                 .firstName(userEntity.getFirstName())
                 .lastName(userEntity.getLastName())
+                .clientType(userEntity.getClientType())
+                .defaultPrice(userEntity.getDefaultPrice())
                 .build();
     }
 

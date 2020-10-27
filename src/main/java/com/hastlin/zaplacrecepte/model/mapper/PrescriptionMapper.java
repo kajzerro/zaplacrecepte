@@ -23,6 +23,7 @@ public class PrescriptionMapper {
                 .phoneNumber(prescriptionDTO.getPhoneNumber())
                 .status(prescriptionDTO.getStatus())
                 .prescriptionNumber(prescriptionDTO.getPrescriptionNumber())
+                .price(prescriptionDTO.getPrice())
                 .build();
     }
 
@@ -40,6 +41,7 @@ public class PrescriptionMapper {
                 .createDateTime(prescriptionEntity.getCreateDateTime().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME))
                 .prescriptionNumber(prescriptionEntity.getPrescriptionNumber())
                 .orderUrl(prescriptionEntity.getOrderUrl())
+                .price(prescriptionEntity.getPrice())
                 .build();
     }
 }

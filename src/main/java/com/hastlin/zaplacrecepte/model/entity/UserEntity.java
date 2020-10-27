@@ -30,6 +30,12 @@ public class UserEntity {
     @Column(name = "PASSWORD")
     private String password;
 
+    @Column(name = "CLIENT_TYPE")
+    private String clientType;
+
+    @Column(name = "DEFAULT_PRICE")
+    private Integer defaultPrice;
+
     @Column(name = "FIRST_NAME")
     private String firstName;
 

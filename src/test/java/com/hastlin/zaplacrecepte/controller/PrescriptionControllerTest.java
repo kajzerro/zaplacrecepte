@@ -62,7 +62,7 @@ public class PrescriptionControllerTest {
     @Before
     public void setUp() {
         Authentication authentication = Mockito.mock(Authentication.class);
-        UserEntity userEntity = UserEntity.builder().id("someUserId").build();
+        UserEntity userEntity = UserEntity.builder().id("someUserId").clientType("SERVICE_BASED").defaultPrice(30).build();
         when(authentication.getPrincipal()).thenReturn(userEntity);
         SecurityContext securityContext = Mockito.mock(SecurityContext.class);
         Mockito.when(securityContext.getAuthentication()).thenReturn(authentication);

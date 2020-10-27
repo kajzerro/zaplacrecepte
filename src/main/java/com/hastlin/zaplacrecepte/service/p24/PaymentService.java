@@ -6,6 +6,7 @@ import com.hastlin.zaplacrecepte.model.dto.p24.P24OrderResponseDto;
 import com.hastlin.zaplacrecepte.model.dto.p24.P24RefundDto;
 import com.hastlin.zaplacrecepte.model.entity.PrescriptionEntity;
 import com.hastlin.zaplacrecepte.service.exception.PaymentException;
+import com.hastlin.zaplacrecepte.utils.FeatureToggleUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.beans.factory.annotation.Value;
@@ -26,6 +27,8 @@ import static org.apache.commons.codec.digest.MessageDigestAlgorithms.SHA_384;
 @Slf4j
 public class PaymentService {
 
+    public static final String SERVICE_BASED_DESCRIPTION = "Opłata za usługę medyczną";
+    public static final String PRESCRIPTION_BASED_DESCRIPTION = "Opłata za recepte";
     @Value("${p24.host}")
     private String host;
 
@@ -41,22 +44,22 @@ public class PaymentService {
     @Value("${p24.notifyUrl}")
     private String notifyUrl;
 
-    @Value("${p24.continueUrl}")
-    private String continueUrl;
+    @Value("${p24.prescriptionBasedContinueUrl}")
+    private String prescriptionBasedContinueUrl;
+
+    @Value("${p24.serviceBasedContinueUrl}")
+    private String serviceBasedContinueUrl;
 
     @Value("${p24.splitPaymentUrl:}")
     private String splitPaymentUrl;
 
-    private static final int TOTAL_AMOUNT = 3000;
-
-    private static final int AMOUNT_FOR_PARTNER = 2700;
     private static final int PARTNER_ID = 119310;
-
-
-    private static final int AMOUNT_FOR_US = 300;
     private static final int OUR_ID = 118681;
+    private static final int AMOUNT_FOR_US_PLN = 3;
 
-    public Payment createPayment(String email) {
+    public Payment createPayment(String email, int price) {
+        String description = FeatureToggleUtil.isServiceBased() ? SERVICE_BASED_DESCRIPTION : PRESCRIPTION_BASED_DESCRIPTION;
+        String continueUrl = FeatureToggleUtil.isServiceBased() ? this.serviceBasedContinueUrl : this.prescriptionBasedContinueUrl;
 
         RestTemplate restTemplate = new RestTemplate();
 
@@ -67,19 +70,19 @@ public class PaymentService {
                 .merchantId(clientId)
                 .posId(clientId)
                 .sessionId(paymentToken)
-                .amount(TOTAL_AMOUNT)
+                .amount(price * 100)
                 .currency("PLN")
-                .description("Opłata za recepte")
+                .description(description)
                 .email(email)
                 .country("PL")
                 .language("pl")
-                .urlReturn(this.continueUrl)
+                .urlReturn(continueUrl)
                 .urlStatus(this.notifyUrl + paymentToken)
                 .timeLimit(0)
                 .channel(16)
-                .transferLabel("Opłata za recepte")
+                .transferLabel(description)
                 .encoding("UTF-8")
-                .sign(createSign(paymentToken, clientId, TOTAL_AMOUNT, "PLN", crc))
+                .sign(createSign(paymentToken, clientId, price * 100, "PLN", crc))
                 .build(), headers);
 
         ResponseEntity<P24OrderResponseDto> payuOrderResponseDtoResponseEntity = restTemplate.exchange(this.host + "/api/v1/transaction/register", HttpMethod.POST, p24OrderRequest, P24OrderResponseDto.class);
@@ -110,7 +113,7 @@ public class PaymentService {
                 .refunds(Collections.singletonList(P24RefundDto.builder()
                         .orderId(prescriptionEntity.getOrderId())
                         .sessionId(prescriptionEntity.getPaymentToken())
-                        .amount(TOTAL_AMOUNT)
+                        .amount(prescriptionEntity.getPrice() * 100)
                         .description("Zwrot srodkow za recepte")
                         .build()))
                 .build(), headers);
@@ -120,12 +123,12 @@ public class PaymentService {
     }
 
     public void sendPaymentToPartnerAndUs(PrescriptionEntity prescriptionEntity) {
-        String splitPaymentToPartnerRequestBody = preparePaymentSoapRequest(prescriptionEntity, PARTNER_ID, AMOUNT_FOR_PARTNER, OUR_ID, AMOUNT_FOR_US);
+        String splitPaymentToPartnerRequestBody = preparePaymentSoapRequest(prescriptionEntity, PARTNER_ID, (prescriptionEntity.getPrice() - AMOUNT_FOR_US_PLN) * 100, OUR_ID, AMOUNT_FOR_US_PLN * 100);
         this.sendPayment(prescriptionEntity, splitPaymentToPartnerRequestBody);
     }
 
 
-    private void sendPayment(PrescriptionEntity prescriptionEntity, String splitPaymentRequestBody) {
+    void sendPayment(PrescriptionEntity prescriptionEntity, String splitPaymentRequestBody) {
         if (!StringUtils.isEmpty(splitPaymentUrl)) {
             this.sendPaymentSoapRequest(prescriptionEntity, splitPaymentRequestBody);
         }
