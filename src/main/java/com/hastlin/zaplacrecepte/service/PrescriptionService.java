@@ -5,8 +5,9 @@ import com.hastlin.zaplacrecepte.model.entity.UserEntity;
 import com.hastlin.zaplacrecepte.repository.PrescriptionRepository;
 import com.hastlin.zaplacrecepte.repository.UserRepository;
 import com.hastlin.zaplacrecepte.service.exception.PaymentException;
-import com.hastlin.zaplacrecepte.service.p24.Payment;
-import com.hastlin.zaplacrecepte.service.p24.PaymentService;
+import com.hastlin.zaplacrecepte.service.payment.Payment;
+import com.hastlin.zaplacrecepte.service.payment.bm.BMPaymentService;
+import com.hastlin.zaplacrecepte.service.payment.p24.P24PaymentService;
 import com.hastlin.zaplacrecepte.utils.FeatureToggleUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +29,7 @@ public class PrescriptionService {
 
     private static final String STATUS_NEW = "NEW";
     private static final String MAIL_SUBJECT = "MojLekarz";
+    public static final String P_24_CODE = "P24";
 
     @Value("${p24.prescriptionBasedShortPaymentLink}")
     private String prescriptionBasedShortPaymentLink;
@@ -42,7 +44,10 @@ public class PrescriptionService {
     private UserRepository userRepository;
 
     @Autowired
-    private PaymentService paymentService;
+    private P24PaymentService p24PaymentService;
+
+    @Autowired
+    private BMPaymentService bmPaymentService;
 
     @Autowired
     private EmailService emailService;
@@ -60,16 +65,24 @@ public class PrescriptionService {
         }
         this.prescriptionRepository.save(prescriptionEntity);
         try {
-            Payment payment = paymentService.createPayment(prescriptionEntity.getEmail(), prescriptionEntity.getPrice());
+            Payment payment;
+            if (isP24PaymentProvider(userEntity)) {
+                payment = p24PaymentService.createPayment(prescriptionEntity.getEmail(), prescriptionEntity.getPrice());
+            } else {
+                payment = bmPaymentService.createPayment(prescriptionEntity.getPrice());
+            }
             prescriptionEntity.setOrderUrl(payment.getOrderUrl());
             prescriptionEntity.setPaymentToken(payment.getPaymentToken());
             sendPaymentRequestsViaEmailAndSms(prescriptionEntity);
-        }
-        catch (PaymentException | RestClientException e) {
+        } catch (PaymentException | RestClientException e) {
             log.error("Communication with payment provider failed: {}", e.getMessage());
             prescriptionEntity.addError("P24: " + this.actualDateTime() + " " + e.getMessage());
         }
         this.prescriptionRepository.save(prescriptionEntity);
+    }
+
+    private boolean isP24PaymentProvider(UserEntity userEntity) {
+        return userEntity.getPaymentProvider().equals(P_24_CODE);
     }
 
     public void sendPaymentRequestsViaEmailAndSms(PrescriptionEntity prescriptionEntity) {
@@ -82,10 +95,9 @@ public class PrescriptionService {
         try {
             String shortPaymentLink = FeatureToggleUtil.isServiceBased() ? this.serviceBasedShortPaymentLink : this.prescriptionBasedShortPaymentLink;
             this.smsService.sendSms(requestMessage + shortPaymentLink + prescriptionEntity.getId(), prescriptionEntity.getPhoneNumber(), MAIL_SUBJECT);
-        }
-        catch (RuntimeException e) {
+        } catch (RuntimeException e) {
             log.error("Sending sms failed: {}", e.getMessage());
-            prescriptionEntity.addError("SMS: " + this.actualDateTime()+ " " + e.getMessage());
+            prescriptionEntity.addError("SMS: " + this.actualDateTime() + " " + e.getMessage());
         }
     }
 
@@ -136,9 +148,13 @@ public class PrescriptionService {
             } else {
                 log.warn("Prescription {} changed to COMPLETED without prescription number filled", prescriptionEntity.getId());
             }
-            paymentService.sendPaymentToPartnerAndUs(prescriptionEntity);
+            if (isP24PaymentProvider(userEntity)) {
+                p24PaymentService.sendPaymentToPartnerAndUs(prescriptionEntity);
+            }
         } else if (prescriptionEntity.getStatus().equals("WAITING_FOR_CONFIRMATION") && updateEntity.getStatus().equals("CANCELED")) {
-            paymentService.cancelPayment(prescriptionEntity);
+            if (isP24PaymentProvider(userEntity)) {
+                p24PaymentService.cancelPayment(prescriptionEntity);
+            }
         }
         prescriptionEntity.setFirstName(updateEntity.getFirstName());
         prescriptionEntity.setLastName(updateEntity.getLastName());
@@ -163,8 +179,7 @@ public class PrescriptionService {
         }
         try {
             this.smsService.sendSms(prescriptionReadyMessage, prescriptionEntity.getPhoneNumber(), MAIL_SUBJECT);
-        }
-        catch (RuntimeException e) {
+        } catch (RuntimeException e) {
             log.error("Sending sms failed: {}", e.getMessage());
             prescriptionEntity.addError("SMS: " + this.actualDateTime() + " " + e.getMessage());
         }

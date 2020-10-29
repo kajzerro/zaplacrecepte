@@ -1,11 +1,11 @@
-package com.hastlin.zaplacrecepte.service.p24;
+package com.hastlin.zaplacrecepte.service.payment.p24;
 
 import org.apache.commons.codec.digest.DigestUtils;
 import org.junit.Test;
 
 import static org.apache.commons.codec.digest.MessageDigestAlgorithms.SHA_384;
 
-public class StatusPaymentServiceTest {
+public class P24StatusPaymentServiceTest {
 
     @Test
     public void createConfirmationSignTest() {

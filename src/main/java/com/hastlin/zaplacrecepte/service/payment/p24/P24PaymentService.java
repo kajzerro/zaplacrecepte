@@ -1,11 +1,12 @@
-package com.hastlin.zaplacrecepte.service.p24;
+package com.hastlin.zaplacrecepte.service.payment.p24;
 
-import com.hastlin.zaplacrecepte.model.dto.p24.P24CancelRequestDto;
-import com.hastlin.zaplacrecepte.model.dto.p24.P24OrderRequestDto;
-import com.hastlin.zaplacrecepte.model.dto.p24.P24OrderResponseDto;
-import com.hastlin.zaplacrecepte.model.dto.p24.P24RefundDto;
+import com.hastlin.zaplacrecepte.model.dto.payment.p24.P24CancelRequestDto;
+import com.hastlin.zaplacrecepte.model.dto.payment.p24.P24OrderRequestDto;
+import com.hastlin.zaplacrecepte.model.dto.payment.p24.P24OrderResponseDto;
+import com.hastlin.zaplacrecepte.model.dto.payment.p24.P24RefundDto;
 import com.hastlin.zaplacrecepte.model.entity.PrescriptionEntity;
 import com.hastlin.zaplacrecepte.service.exception.PaymentException;
+import com.hastlin.zaplacrecepte.service.payment.Payment;
 import com.hastlin.zaplacrecepte.utils.FeatureToggleUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.DigestUtils;
@@ -25,7 +26,7 @@ import static org.apache.commons.codec.digest.MessageDigestAlgorithms.SHA_384;
 
 @Service
 @Slf4j
-public class PaymentService {
+public class P24PaymentService {
 
     public static final String SERVICE_BASED_DESCRIPTION = "Opłata za usługę medyczną";
     public static final String PRESCRIPTION_BASED_DESCRIPTION = "Opłata za recepte";
@@ -111,7 +112,7 @@ public class PaymentService {
                 .requestId(UUID.randomUUID().toString())
                 .refundsUuid(UUID.randomUUID().toString())
                 .refunds(Collections.singletonList(P24RefundDto.builder()
-                        .orderId(prescriptionEntity.getOrderId())
+                        .orderId(Integer.parseInt(prescriptionEntity.getOrderId()))
                         .sessionId(prescriptionEntity.getPaymentToken())
                         .amount(prescriptionEntity.getPrice() * 100)
                         .description("Zwrot srodkow za recepte")

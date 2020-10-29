@@ -1,4 +1,4 @@
-package com.hastlin.zaplacrecepte.service.p24;
+package com.hastlin.zaplacrecepte.service.payment;
 
 import lombok.*;
 
