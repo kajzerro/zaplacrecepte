@@ -14,6 +14,7 @@ public class TimeUtils {
     }
 
     public static ZonedDateTime yesterdaysMidnight() {
-        return ZonedDateTime.of(ZonedDateTime.now().getYear(), ZonedDateTime.now().getMonthValue(), ZonedDateTime.now().minusDays(1).getDayOfMonth(), 0, 0, 0, 0, ZoneId.of("Europe/Warsaw"));
+        ZonedDateTime yesterday = ZonedDateTime.now().minusDays(1);
+        return ZonedDateTime.of(yesterday.getYear(), yesterday.getMonthValue(), yesterday.getDayOfMonth(), 0, 0, 0, 0, ZoneId.of("Europe/Warsaw"));
     }
 }

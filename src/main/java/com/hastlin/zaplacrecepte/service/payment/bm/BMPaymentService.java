@@ -22,8 +22,11 @@ public class BMPaymentService {
     //    @Value("${bm.sharedKey}")
     private String sharedKey = "a76b59670d31b6d595c58d6e525bf689e6d8b7b4";
 
-    public Payment createPayment(int price) {
+    public Payment createPayment(int price, boolean isPrescriptionBased) {
         String orderId = UUID.randomUUID().toString().replaceAll("-", "");
+        if (isPrescriptionBased) {
+            orderId = "P" + orderId.substring(1);
+        }
         String hash = calculateHash(serviceId, orderId, BMUtils.formatPrice(price), sharedKey);
         return Payment.builder().orderUrl(startTransactionUrl + "?ServiceID=" + serviceId + "&OrderID=" + orderId + "&Amount=" + BMUtils.formatPrice(price) + "&" +
                 "Hash=" + hash).paymentToken(orderId).build();

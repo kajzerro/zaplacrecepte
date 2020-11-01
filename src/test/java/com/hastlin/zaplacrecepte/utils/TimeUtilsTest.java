@@ -14,11 +14,11 @@ public class TimeUtilsTest {
         assertEquals(ZonedDateTime.now().minusDays(1).getDayOfMonth(), TimeUtils.yesterdays23h59m().getDayOfMonth());
         assertEquals(ZonedDateTime.now().minusDays(1).getDayOfMonth(), TimeUtils.yesterdaysMidnight().getDayOfMonth());
 
-        assertEquals(ZonedDateTime.now().getMonthValue(), TimeUtils.yesterdaysMidnight().getMonthValue());
-        assertEquals(ZonedDateTime.now().getMonthValue(), TimeUtils.yesterdays23h59m().getMonthValue());
+        assertEquals(ZonedDateTime.now().minusDays(1).getMonthValue(), TimeUtils.yesterdaysMidnight().getMonthValue());
+        assertEquals(ZonedDateTime.now().minusDays(1).getMonthValue(), TimeUtils.yesterdays23h59m().getMonthValue());
 
-        assertEquals(ZonedDateTime.now().getYear(), TimeUtils.yesterdaysMidnight().getYear());
-        assertEquals(ZonedDateTime.now().getYear(), TimeUtils.yesterdays23h59m().getYear());
+        assertEquals(ZonedDateTime.now().minusDays(1).getYear(), TimeUtils.yesterdaysMidnight().getYear());
+        assertEquals(ZonedDateTime.now().minusDays(1).getYear(), TimeUtils.yesterdays23h59m().getYear());
     }
 
     @Test

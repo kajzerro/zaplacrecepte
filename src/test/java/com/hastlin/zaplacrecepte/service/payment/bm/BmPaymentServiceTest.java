@@ -7,9 +7,15 @@ import static org.junit.Assert.assertEquals;
 public class BmPaymentServiceTest {
 
     @Test
-    public void createPayment() {
+    public void createPaymentPrescription() {
         BMPaymentService bmPaymentService = new BMPaymentService();
-        System.out.println(bmPaymentService.createPayment(10));
+        System.out.println(bmPaymentService.createPayment(10, true));
+    }
+
+    @Test
+    public void createPaymentService() {
+        BMPaymentService bmPaymentService = new BMPaymentService();
+        System.out.println(bmPaymentService.createPayment(10, false));
     }
 
     @Test
