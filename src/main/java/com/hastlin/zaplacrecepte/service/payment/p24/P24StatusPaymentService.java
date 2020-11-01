@@ -24,16 +24,16 @@ import static org.apache.commons.codec.digest.MessageDigestAlgorithms.SHA_384;
 @Slf4j
 public class P24StatusPaymentService {
 
-    @Value("${p24.crc}")
+    @Value("${payment.p24.crc}")
     private String crc;
 
-    @Value("${p24.host}")
+    @Value("${payment.p24.host}")
     private String host;
 
-    @Value("${p24.clientId}")
+    @Value("${payment.p24.clientId}")
     private int clientId;
 
-    @Value("${p24.apiKey}")
+    @Value("${payment.p24.apiKey}")
     private String apiKey;
 
     @Autowired

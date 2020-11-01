@@ -7,6 +7,7 @@ import com.hastlin.zaplacrecepte.repository.PrescriptionRepository;
 import com.hastlin.zaplacrecepte.utils.BMUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.Base64;
@@ -17,11 +18,11 @@ import java.util.Optional;
 @Slf4j
 public class BMStatusPaymentService {
 
-    //    @Value("${bm.serviceId}")
-    private String serviceId = "903084";
+    @Value("${payment.bm.serviceId}")
+    private String serviceId;
 
-    //    @Value("${bm.sharedKey}")
-    String sharedKey = "a76b59670d31b6d595c58d6e525bf689e6d8b7b4";
+    @Value("${payment.bm.sharedKey}")
+    String sharedKey;
 
     @Autowired
     PrescriptionRepository prescriptionRepository;

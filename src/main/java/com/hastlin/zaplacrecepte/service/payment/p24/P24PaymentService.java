@@ -30,28 +30,28 @@ public class P24PaymentService {
 
     public static final String SERVICE_BASED_DESCRIPTION = "Opłata za usługę medyczną";
     public static final String PRESCRIPTION_BASED_DESCRIPTION = "Opłata za recepte";
-    @Value("${p24.host}")
+    @Value("${payment.p24.host}")
     private String host;
 
-    @Value("${p24.clientId}")
+    @Value("${payment.p24.clientId}")
     private int clientId;
 
-    @Value("${p24.crc}")
+    @Value("${payment.p24.crc}")
     private String crc;
 
-    @Value("${p24.apiKey}")
+    @Value("${payment.p24.apiKey}")
     private String apiKey;
 
-    @Value("${p24.notifyUrl}")
+    @Value("${payment.p24.notifyUrl}")
     private String notifyUrl;
 
-    @Value("${p24.prescriptionBasedContinueUrl}")
+    @Value("${payment.p24.prescriptionBasedContinueUrl}")
     private String prescriptionBasedContinueUrl;
 
-    @Value("${p24.serviceBasedContinueUrl}")
+    @Value("${payment.p24.serviceBasedContinueUrl}")
     private String serviceBasedContinueUrl;
 
-    @Value("${p24.splitPaymentUrl:}")
+    @Value("${payment.p24.splitPaymentUrl:}")
     private String splitPaymentUrl;
 
     private static final int PARTNER_ID = 119310;

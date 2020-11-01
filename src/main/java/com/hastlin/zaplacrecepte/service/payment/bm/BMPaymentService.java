@@ -3,6 +3,7 @@ package com.hastlin.zaplacrecepte.service.payment.bm;
 import com.hastlin.zaplacrecepte.service.payment.Payment;
 import com.hastlin.zaplacrecepte.utils.BMUtils;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.UUID;
@@ -11,16 +12,14 @@ import java.util.UUID;
 @Slf4j
 public class BMPaymentService {
 
-    //TODO: To be migrated to yaml
+    @Value("${payment.bm.startTransactionUrl}")
+    private String startTransactionUrl;
 
-    //    @Value("${bm.startTransactionUrl}")
-    private String startTransactionUrl = "https://pay-accept.bm.pl/payment";
+    @Value("${payment.bm.serviceId}")
+    private String serviceId;
 
-    //    @Value("${bm.serviceId}")
-    private String serviceId = "903084";
-
-    //    @Value("${bm.sharedKey}")
-    private String sharedKey = "a76b59670d31b6d595c58d6e525bf689e6d8b7b4";
+    @Value("${payment.bm.sharedKey}")
+    private String sharedKey;
 
     public Payment createPayment(int price, boolean isPrescriptionBased) {
         String orderId = UUID.randomUUID().toString().replaceAll("-", "");

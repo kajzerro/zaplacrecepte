@@ -125,6 +125,7 @@ public class BMStatusPaymentServiceTest {
     @Test
     public void should_pass_correct_hash_from_demo() {
         BMStatusPaymentService bmStatusPaymentService = new BMStatusPaymentService();
+        bmStatusPaymentService.sharedKey = "a76b59670d31b6d595c58d6e525bf689e6d8b7b4";
         assertTrue(bmStatusPaymentService.isHashCorrect(BMStatusChangeRequestDecodedDto.builder().
                 serviceId("903084").
                 orderId("c46ae8502b0d4e1bab42aa0e0582aea1").

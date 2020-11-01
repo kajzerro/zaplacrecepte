@@ -13,17 +13,22 @@ spring:
       password: ${DB_PASSWORD}
       driverClassName: com.mysql.cj.jdbc.Driver
 
-p24:
-  host: "https://secure.przelewy24.pl"
-  clientId: 118607
-  crc: "6cbf3f18bf0aba5b"
-  apiKey: "ac64e455852ab6bc50fe54d1ed4baa93"
-  notifyUrl: "https://api.zaplacrecepte.pl/payment/notification/p24/"
-  prescriptionBasedContinueUrl: "https://www.zaplacrecepte.pl/prescription/thankyou"
-  serviceBasedContinueUrl: "https://www.zaplacrecepte.pl/service/thankyou"
+payment:
   prescriptionBasedShortPaymentLink: "https://www.zaplacrecepte.pl/p/"
   serviceBasedShortPaymentLink: "https://www.zaplacrecepte.pl/s/"
-  splitPaymentUrl: "https://secure.przelewy24.pl/external/118607.php"
+  p24:
+    host: "https://secure.przelewy24.pl"
+    clientId: 118607
+    crc: "6cbf3f18bf0aba5b"
+    apiKey: "ac64e455852ab6bc50fe54d1ed4baa93"
+    notifyUrl: "https://api.zaplacrecepte.pl/payment/notification/p24/"
+    prescriptionBasedContinueUrl: "https://www.zaplacrecepte.pl/prescription/thankyou"
+    serviceBasedContinueUrl: "https://www.zaplacrecepte.pl/service/thankyou"
+    splitPaymentUrl: "https://secure.przelewy24.pl/external/118607.php"
+  bm:
+    startTransactionUrl: "https://pay-accept.bm.pl/payment"
+    sharedKey: "a76b59670d31b6d595c58d6e525bf689e6d8b7b4"
+    serviceId: 903084
 
 paymentReminder:
   cronExpression: 0 30 15 ? * *

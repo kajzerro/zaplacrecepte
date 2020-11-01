@@ -31,10 +31,10 @@ public class PrescriptionService {
     private static final String MAIL_SUBJECT = "MojLekarz";
     public static final String P_24_CODE = "P24";
 
-    @Value("${p24.prescriptionBasedShortPaymentLink}")
+    @Value("${payment.prescriptionBasedShortPaymentLink}")
     private String prescriptionBasedShortPaymentLink;
 
-    @Value("${p24.serviceBasedShortPaymentLink}")
+    @Value("${payment.serviceBasedShortPaymentLink}")
     private String serviceBasedShortPaymentLink;
 
     @Autowired

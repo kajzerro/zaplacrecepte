@@ -13,16 +13,21 @@ spring:
         format_sql: true
     open-in-view: true
 
-p24:
-  host: "https://sandbox.przelewy24.pl"
-  clientId: 118607
-  crc: "373004a537f5c0f9"
-  apiKey: "3c233647d304fa4ee9b7cf1c76529a99"
-  notifyUrl: "https://api.demo.zaplacrecepte.pl/payment/notification/p24/"
-  prescriptionBasedContinueUrl: "https://demo.zaplacrecepte.pl/prescription/thankyou"
-  serviceBasedContinueUrl: "https://demo.zaplacrecepte.pl/service/thankyou"
+payment:
   prescriptionBasedShortPaymentLink: "https://demo.zaplacrecepte.pl/p/"
   serviceBasedShortPaymentLink: "https://demo.zaplacrecepte.pl/s/"
+  p24:
+    host: "https://sandbox.przelewy24.pl"
+    clientId: 118607
+    crc: "373004a537f5c0f9"
+    apiKey: "3c233647d304fa4ee9b7cf1c76529a99"
+    notifyUrl: "https://api.demo.zaplacrecepte.pl/payment/notification/p24/"
+    prescriptionBasedContinueUrl: "https://demo.zaplacrecepte.pl/prescription/thankyou"
+    serviceBasedContinueUrl: "https://demo.zaplacrecepte.pl/service/thankyou"
+  bm:
+    startTransactionUrl: "https://pay-accept.bm.pl/payment"
+    sharedKey: "a76b59670d31b6d595c58d6e525bf689e6d8b7b4"
+    serviceId: 903084
 
 paymentReminder:
   cronExpression: 0 30 15 ? * *
