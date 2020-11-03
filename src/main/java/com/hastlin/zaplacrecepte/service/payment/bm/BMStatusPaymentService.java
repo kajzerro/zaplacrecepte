@@ -10,9 +10,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.util.Base64;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Service
 @Slf4j
@@ -40,11 +40,19 @@ public class BMStatusPaymentService {
             "</confirmationList>";
 
     public String changeStatusPayment(BMStatusChangeRequestDto bmStatusChangeRequestDto) {
-        BMStatusChangeRequestDecodedDto decodedDto = parseRequest(decodeRequest(bmStatusChangeRequestDto));
+        String unparsedRequest = decodeRequest(bmStatusChangeRequestDto);
+        BMStatusChangeRequestDecodedDto decodedDto = parseRequest(unparsedRequest);
         log.info("Got payment status change request \"{}\"", decodedDto);
         if (!isHashCorrect(decodedDto)) {
-            log.warn("Unauthorized status change - wrong hash - request for request={}", decodedDto);
-            return createNotConfirmedResponse(decodedDto);
+            log.info("Unauthorized status change - wrong DTOhash - request for request={}", decodedDto);
+        }
+        try {
+            log.info("Calculate unparsed hash");
+            if (!isHashInUnparsedCorrect(unparsedRequest)) {
+                log.warn("Unauthorized status change - wrong unparsedHash - request for request={}", unparsedRequest);
+            }
+        } catch (RuntimeException e) {
+            log.error("Calculating hash from unparsed request error", e);
         }
 
         Optional<PrescriptionEntity> optionalPrescriptionEntity = prescriptionRepository.findByPaymentToken(decodedDto.getOrderId());
@@ -69,7 +77,7 @@ public class BMStatusPaymentService {
         return !Objects.equals(serviceId, decodedDto.getServiceId()) ||
                 !Objects.equals("PLN", decodedDto.getCurrency()) ||
                 !optionalPrescriptionEntity.isPresent() ||
-                !Objects.equals(BMUtils.formatPrice(optionalPrescriptionEntity.get().getPrice()), decodedDto.getAmount());
+                !Objects.equals(BMUtils.formatPrice(optionalPrescriptionEntity.get().getPrice()), decodedDto.getStartAmount());
     }
 
     String createConfirmationResponse(BMStatusChangeRequestDecodedDto decodedDto, String confirmation) {
@@ -108,7 +116,21 @@ public class BMStatusPaymentService {
                 dto.getCity(),
                 dto.getNrb(),
                 dto.getSenderData(),
+                dto.getStartAmount(),
                 sharedKey));
+    }
+
+    boolean isHashInUnparsedCorrect(String unparsedRequest) {
+        String hash = BMUtils.extractValueFromXmlTag(unparsedRequest, "<hash>", "</hash>");
+        Pattern pattern = Pattern.compile("<\\w+>([^<]*)<\\/\\w+>");
+        List<String> valueNodes = new ArrayList<>();
+        Matcher m = pattern.matcher(unparsedRequest);
+        while (m.find()) {
+            if (!Objects.equals(hash, m.group(1)))
+                valueNodes.add(m.group(1));
+        }
+        valueNodes.add(sharedKey);
+        return Objects.equals(hash, BMUtils.calcHash(valueNodes.toArray(new String[0])));
     }
 
     BMStatusChangeRequestDecodedDto parseRequest(String decodedRequest) {
@@ -132,6 +154,7 @@ public class BMStatusPaymentService {
                 city(BMUtils.extractValueFromXmlTag(decodedRequest, "<city>", "</city>")).
                 nrb(BMUtils.extractValueFromXmlTag(decodedRequest, "<nrb>", "</nrb>")).
                 senderData(BMUtils.extractValueFromXmlTag(decodedRequest, "<senderData>", "</senderData>")).
+                startAmount(BMUtils.extractValueFromXmlTag(decodedRequest, "<startAmount>", "</startAmount>")).
                 hash(BMUtils.extractValueFromXmlTag(decodedRequest, "<hash>", "</hash>")).
                 build();
     }

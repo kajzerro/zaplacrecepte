@@ -62,4 +62,11 @@ public class UserEntity {
 
     @Column(name = "MODIFICATION_DATETIME")
     private ZonedDateTime modificationDateTime;
+
+    @Column(name = "ACCOUNT_NUMBER")
+    private String accountNumber;
+
+    @Column(name = "ACCOUNT_OWNER")
+    private String accountOwner;
+
 }

@@ -69,7 +69,7 @@ public class PrescriptionService {
             if (isP24PaymentProvider(userEntity)) {
                 payment = p24PaymentService.createPayment(prescriptionEntity.getEmail(), prescriptionEntity.getPrice());
             } else {
-                payment = bmPaymentService.createPayment(prescriptionEntity.getPrice(), FeatureToggleUtil.isPrescriptionBased());
+                payment = bmPaymentService.createPayment(prescriptionEntity.getPrice(), userEntity.getAccountNumber(), userEntity.getAccountOwner(), FeatureToggleUtil.isPrescriptionBased());
             }
             prescriptionEntity.setOrderUrl(payment.getOrderUrl());
             prescriptionEntity.setPaymentToken(payment.getPaymentToken());

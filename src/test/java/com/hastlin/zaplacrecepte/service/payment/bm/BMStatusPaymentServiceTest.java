@@ -148,4 +148,91 @@ public class BMStatusPaymentServiceTest {
                 hash("a9e5b28b028380db73d06dd78185b3ab9b9864875127dad3baa6c892c633754b").
                 build()));
     }
+
+    @Test
+    public void should_pass_correct_hash_from_success_prod() {
+        BMStatusPaymentService bmStatusPaymentService = new BMStatusPaymentService();
+        bmStatusPaymentService.sharedKey = "51473d84c2c6e0294a6f05457c6e1f13dedf6f68";
+        assertTrue(bmStatusPaymentService.isHashCorrect(BMStatusChangeRequestDecodedDto.builder().
+                serviceId("102652").
+                orderId("8cff1c0b2b614010b2b56aacc94ba37d").
+                remoteId("A6W8JUU8TH").
+                amount("4.00").
+                currency("PLN").
+                gatewayId("3").
+                paymentDate("20201102214432").
+                paymentStatus("SUCCESS").
+                paymentStatusDetails("AUTHORIZED").
+                startAmount("1.00").
+                hash("d8c9bf3b120234ab7a90d9e8280719be5430e5025d727066ff4d9b22b216851f").
+                build()));
+    }
+
+    @Test
+    public void should_pass_correct_hash_from_fail_prod() {
+        BMStatusPaymentService bmStatusPaymentService = new BMStatusPaymentService();
+        bmStatusPaymentService.sharedKey = "51473d84c2c6e0294a6f05457c6e1f13dedf6f68";
+        assertTrue(bmStatusPaymentService.isHashCorrect(BMStatusChangeRequestDecodedDto.builder().
+                serviceId("102652").
+                orderId("8cff1c0b2b614010b2b56aacc94ba37d").
+                remoteId("A5FMUAUJRG").
+                amount("4.00").
+                currency("PLN").
+                paymentDate("20201102214053").
+                paymentStatus("FAILURE").
+                paymentStatusDetails("REJECTED_BY_USER").
+                startAmount("1.00").
+                hash("f64f18c697fe687da6f1c6c150ba54fc6392301d8291ab2386da6fb3c48785c6").
+                build()));
+    }
+
+    @Test
+    public void should_pass_hash_in_unparsed_request1() {
+        String unparsedRequest = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n" +
+                "<transactionList>\n" +
+                "    <serviceID>102652</serviceID>\n" +
+                "    <transactions>\n" +
+                "        <transaction>\n" +
+                "            <orderID>8cff1c0b2b614010b2b56aacc94ba37d</orderID>\n" +
+                "            <remoteID>A6W8JUU8TH</remoteID>\n" +
+                "            <amount>4.00</amount>\n" +
+                "            <currency>PLN</currency>\n" +
+                "            <gatewayID>3</gatewayID>\n" +
+                "            <paymentDate>20201102214432</paymentDate>\n" +
+                "            <paymentStatus>SUCCESS</paymentStatus>\n" +
+                "            <paymentStatusDetails>AUTHORIZED</paymentStatusDetails>\n" +
+                "            <startAmount>1.00</startAmount>\n" +
+                "        </transaction>\n" +
+                "    </transactions>\n" +
+                "    <hash>d8c9bf3b120234ab7a90d9e8280719be5430e5025d727066ff4d9b22b216851f</hash>\n" +
+                "</transactionList>";
+        BMStatusPaymentService bmStatusPaymentService = new BMStatusPaymentService();
+        bmStatusPaymentService.sharedKey = "51473d84c2c6e0294a6f05457c6e1f13dedf6f68";
+        assertTrue(bmStatusPaymentService.isHashInUnparsedCorrect(unparsedRequest));
+    }
+
+    @Test
+    public void should_pass_hash_in_unparsed_request2() {
+        String unparsedRequest = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n" +
+                "<transactionList>\n" +
+                "    <serviceID>102652</serviceID>\n" +
+                "    <transactions>\n" +
+                "        <transaction>\n" +
+                "            <orderID>8cff1c0b2b614010b2b56aacc94ba37d</orderID>\n" +
+                "            <remoteID>A5FMUAUJRG</remoteID>\n" +
+                "            <amount>4.00</amount>\n" +
+                "            <currency>PLN</currency>\n" +
+                "            <paymentDate>20201102214053</paymentDate>\n" +
+                "            <paymentStatus>FAILURE</paymentStatus>\n" +
+                "            <paymentStatusDetails>REJECTED_BY_USER</paymentStatusDetails>\n" +
+                "            <startAmount>1.00</startAmount>\n" +
+                "        </transaction>\n" +
+                "    </transactions>\n" +
+                "    <hash>f64f18c697fe687da6f1c6c150ba54fc6392301d8291ab2386da6fb3c48785c6</hash>\n" +
+                "</transactionList>";
+        BMStatusPaymentService bmStatusPaymentService = new BMStatusPaymentService();
+        bmStatusPaymentService.sharedKey = "51473d84c2c6e0294a6f05457c6e1f13dedf6f68";
+        assertTrue(bmStatusPaymentService.isHashInUnparsedCorrect(unparsedRequest));
+    }
+
 }

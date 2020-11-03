@@ -30,5 +30,7 @@ public class BMStatusChangeRequestDecodedDto {
     private String nrb;
     private String senderData;
 
+    private String startAmount;
+
     private String hash;
 }

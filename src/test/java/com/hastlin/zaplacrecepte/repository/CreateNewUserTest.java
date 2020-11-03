@@ -58,4 +58,26 @@ public class CreateNewUserTest {
         repository.save(userEntity);
     }
 
+    @Ignore
+    @Test
+    public void should_add_new_user3() {
+        UserEntity userEntity = UserEntity.builder()
+                .username("arturm@mp.pl")
+                .password(BCrypt.hashpw("arturm120", BCrypt.gensalt()))
+                .clientType("SERVICE_BASED")
+                .defaultPrice(0)
+                .firstName("Artur")
+                .lastName("Marcinkiewicz")
+                .phoneNumber("604641120")
+                .email("arturm@mp.pl")
+                .smsMessageRequestPayment("Dr Artur Marcinkiewicz prosi o oplacenie uslugi medycznej: ")
+                .smsMessageCompleted("Recepta zostala wystawiona. Kod: %s. Zrealizujesz recepte w aptece podajac kod i numer PESEL.")
+                .paymentProvider("BM")
+                .createDateTime(ZonedDateTime.now())
+                .accountNumber("87102023680000260200963074")
+                .accountOwner("Artur Marcinkiewicz")
+                .build();
+        repository.save(userEntity);
+    }
+
 }

@@ -11,6 +11,8 @@ import java.util.UUID;
 @Service
 @Slf4j
 public class BMPaymentService {
+    public static final String SERVICE_BASED_DESCRIPTION = "Opłata za usługę medyczną";
+    public static final String PRESCRIPTION_BASED_DESCRIPTION = "Opłata za recepte";
 
     @Value("${payment.bm.startTransactionUrl}")
     private String startTransactionUrl;
@@ -21,19 +23,23 @@ public class BMPaymentService {
     @Value("${payment.bm.sharedKey}")
     private String sharedKey;
 
-    public Payment createPayment(int price, boolean isPrescriptionBased) {
+    public Payment createPayment(int price, String accountNumber, String accountOwner, boolean isPrescriptionBased) {
         String orderId = UUID.randomUUID().toString().replaceAll("-", "");
+        String title = SERVICE_BASED_DESCRIPTION;
         if (isPrescriptionBased) {
             orderId = "P" + orderId.substring(1);
+            title = PRESCRIPTION_BASED_DESCRIPTION;
         }
-        String hash = calculateHash(serviceId, orderId, BMUtils.formatPrice(price), sharedKey);
-        return Payment.builder().orderUrl(startTransactionUrl + "?ServiceID=" + serviceId + "&OrderID=" + orderId + "&Amount=" + BMUtils.formatPrice(price) + "&" +
-                "Hash=" + hash).paymentToken(orderId).build();
-    }
+        String hash = BMUtils.calcHash(serviceId, orderId, BMUtils.formatPrice(price), accountNumber, title, accountOwner, sharedKey);
 
-    String calculateHash(String serviceId, String orderId, String amount, String sharedKey) {
-        return BMUtils.calcHash(serviceId, orderId, amount, sharedKey);
+        return Payment.builder().orderUrl(startTransactionUrl +
+                "?ServiceID=" + serviceId +
+                "&OrderID=" + orderId +
+                "&Amount=" + BMUtils.formatPrice(price) +
+                "&CustomerNRB=" + accountNumber +
+                "&Title=" + title +
+                "&ReceiverName=" + accountOwner +
+                "&Hash=" + hash).paymentToken(orderId).build();
     }
-
 
 }

@@ -26,9 +26,9 @@ payment:
     serviceBasedContinueUrl: "https://www.zaplacrecepte.pl/service/thankyou"
     splitPaymentUrl: "https://secure.przelewy24.pl/external/118607.php"
   bm:
-    startTransactionUrl: "https://pay-accept.bm.pl/payment"
-    sharedKey: "a76b59670d31b6d595c58d6e525bf689e6d8b7b4"
-    serviceId: 903084
+    startTransactionUrl: "https://pay.bm.pl/payment"
+    sharedKey: "51473d84c2c6e0294a6f05457c6e1f13dedf6f68"
+    serviceId: 102652
 
 paymentReminder:
   cronExpression: 0 30 15 ? * *
