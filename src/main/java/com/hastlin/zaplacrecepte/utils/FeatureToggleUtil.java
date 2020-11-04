@@ -8,11 +8,15 @@ public class FeatureToggleUtil {
     private static final String SERVICE_BASED = "SERVICE_BASED";
     private static final String PRESCRIPTION_BASED = "PRESCRIPTION_BASED";
 
-    public static boolean isServiceBased() {
+    public static boolean isUserServiceBased(UserEntity userEntity) {
+        return SERVICE_BASED.equals(userEntity.getClientType());
+    }
+
+    public static boolean isLoggedUserServiceBased() {
         return SERVICE_BASED.equals(((UserEntity) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getClientType());
     }
 
-    public static boolean isPrescriptionBased() {
+    public static boolean isLoggedUserPrescriptionBased() {
         return PRESCRIPTION_BASED.equals(((UserEntity) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getClientType());
     }
 }

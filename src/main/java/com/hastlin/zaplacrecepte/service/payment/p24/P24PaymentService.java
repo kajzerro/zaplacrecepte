@@ -59,8 +59,8 @@ public class P24PaymentService {
     private static final int AMOUNT_FOR_US_PLN = 3;
 
     public Payment createPayment(String email, int price) {
-        String description = FeatureToggleUtil.isServiceBased() ? SERVICE_BASED_DESCRIPTION : PRESCRIPTION_BASED_DESCRIPTION;
-        String continueUrl = FeatureToggleUtil.isServiceBased() ? this.serviceBasedContinueUrl : this.prescriptionBasedContinueUrl;
+        String description = FeatureToggleUtil.isLoggedUserServiceBased() ? SERVICE_BASED_DESCRIPTION : PRESCRIPTION_BASED_DESCRIPTION;
+        String continueUrl = FeatureToggleUtil.isLoggedUserServiceBased() ? this.serviceBasedContinueUrl : this.prescriptionBasedContinueUrl;
 
         RestTemplate restTemplate = new RestTemplate();
 

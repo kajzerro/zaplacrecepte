@@ -60,7 +60,7 @@ public class PrescriptionService {
         prescriptionEntity.setOwnerId(userEntity.getId());
         prescriptionEntity.setStatus(STATUS_NEW);
         prescriptionEntity.setCreateDateTime(actualDateTime());
-        if (prescriptionEntity.getPrice() == null || FeatureToggleUtil.isPrescriptionBased()) {
+        if (prescriptionEntity.getPrice() == null || FeatureToggleUtil.isLoggedUserPrescriptionBased()) {
             prescriptionEntity.setPrice(userEntity.getDefaultPrice());
         }
         this.prescriptionRepository.save(prescriptionEntity);
@@ -69,13 +69,13 @@ public class PrescriptionService {
             if (isP24PaymentProvider(userEntity)) {
                 payment = p24PaymentService.createPayment(prescriptionEntity.getEmail(), prescriptionEntity.getPrice());
             } else {
-                payment = bmPaymentService.createPayment(prescriptionEntity.getPrice(), userEntity.getAccountNumber(), userEntity.getAccountOwner(), FeatureToggleUtil.isPrescriptionBased());
+                payment = bmPaymentService.createPayment(prescriptionEntity.getPrice(), userEntity.getAccountNumber(), userEntity.getAccountOwner(), FeatureToggleUtil.isLoggedUserPrescriptionBased());
             }
             prescriptionEntity.setOrderUrl(payment.getOrderUrl());
             prescriptionEntity.setPaymentToken(payment.getPaymentToken());
             sendPaymentRequestsViaEmailAndSms(prescriptionEntity);
         } catch (PaymentException | RestClientException e) {
-            log.error("Communication with payment provider failed: {}", e.getMessage());
+            log.error("Communication with payment provider failed", e);
             prescriptionEntity.addError("P24: " + this.actualDateTime() + " " + e.getMessage());
         }
         this.prescriptionRepository.save(prescriptionEntity);
@@ -86,27 +86,28 @@ public class PrescriptionService {
     }
 
     public void sendPaymentRequestsViaEmailAndSms(PrescriptionEntity prescriptionEntity) {
-        String requestMessage = userRepository.findById(prescriptionEntity.getOwnerId()).get().getSmsMessageRequestPayment();
-        sendEmailWithPaymentRequest(prescriptionEntity, requestMessage);
-        sendSmsWithPaymentRequest(prescriptionEntity, requestMessage);
+        UserEntity userEntity = userRepository.findById(prescriptionEntity.getOwnerId()).get();
+        String requestMessage = userEntity.getSmsMessageRequestPayment();
+        String shortPaymentLink = FeatureToggleUtil.isUserServiceBased(userEntity) ? this.serviceBasedShortPaymentLink : this.prescriptionBasedShortPaymentLink;
+
+        sendEmailWithPaymentRequest(prescriptionEntity, requestMessage, shortPaymentLink);
+        sendSmsWithPaymentRequest(prescriptionEntity, requestMessage, shortPaymentLink);
     }
 
-    private void sendSmsWithPaymentRequest(PrescriptionEntity prescriptionEntity, String requestMessage) {
+    private void sendSmsWithPaymentRequest(PrescriptionEntity prescriptionEntity, String requestMessage, String shortPaymentLink) {
         try {
-            String shortPaymentLink = FeatureToggleUtil.isServiceBased() ? this.serviceBasedShortPaymentLink : this.prescriptionBasedShortPaymentLink;
             this.smsService.sendSms(requestMessage + shortPaymentLink + prescriptionEntity.getId(), prescriptionEntity.getPhoneNumber(), MAIL_SUBJECT);
         } catch (RuntimeException e) {
-            log.error("Sending sms failed: {}", e.getMessage());
+            log.error("Sending sms failed", e);
             prescriptionEntity.addError("SMS: " + this.actualDateTime() + " " + e.getMessage());
         }
     }
 
-    private void sendEmailWithPaymentRequest(PrescriptionEntity prescriptionEntity, String requestMessage) {
+    private void sendEmailWithPaymentRequest(PrescriptionEntity prescriptionEntity, String requestMessage, String shortPaymentLink) {
         try {
-            String shortPaymentLink = FeatureToggleUtil.isServiceBased() ? this.serviceBasedShortPaymentLink : this.prescriptionBasedShortPaymentLink;
             this.emailService.sendSimpleMessage(prescriptionEntity.getEmail(), MAIL_SUBJECT, requestMessage + shortPaymentLink + prescriptionEntity.getId());
         } catch (MessagingException | RuntimeException e) {
-            log.error("Email could not be delivered: {}", e.getMessage());
+            log.error("Email could not be delivered", e);
             prescriptionEntity.addError("Email: " + this.actualDateTime() + " " + e.getMessage());
         }
     }
@@ -174,13 +175,13 @@ public class PrescriptionService {
         try {
             this.emailService.sendSimpleMessage(prescriptionEntity.getEmail(), MAIL_SUBJECT, prescriptionReadyMessage);
         } catch (MessagingException | RuntimeException e) {
-            log.error("Email could not be delivered: {}", e.getMessage());
+            log.error("Email could not be delivered", e);
             prescriptionEntity.addError("Email: " + this.actualDateTime() + " " + e.getMessage());
         }
         try {
             this.smsService.sendSms(prescriptionReadyMessage, prescriptionEntity.getPhoneNumber(), MAIL_SUBJECT);
         } catch (RuntimeException e) {
-            log.error("Sending sms failed: {}", e.getMessage());
+            log.error("Sending sms failed", e);
             prescriptionEntity.addError("SMS: " + this.actualDateTime() + " " + e.getMessage());
         }
     }
