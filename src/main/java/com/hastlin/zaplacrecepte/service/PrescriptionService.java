@@ -21,6 +21,7 @@ import javax.mail.MessagingException;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -87,11 +88,14 @@ public class PrescriptionService {
     }
 
     public void sendPaymentRequestsViaEmailAndSms(PrescriptionEntity prescriptionEntity) {
+        //TODO: WE look for a userEntity but in createPrescription flow we had this entity (createNewPrescription method)
         UserEntity userEntity = userRepository.findById(prescriptionEntity.getOwnerId()).get();
         String requestMessage = userEntity.getSmsMessageRequestPayment();
         String shortPaymentLink = FeatureToggleUtil.isUserServiceBased(userEntity) ? this.serviceBasedShortPaymentLink : this.prescriptionBasedShortPaymentLink;
 
-        sendEmailWithPaymentRequest(prescriptionEntity, requestMessage, shortPaymentLink);
+        if(!Objects.equals(userEntity.getEmail(), prescriptionEntity.getEmail())) {
+            sendEmailWithPaymentRequest(prescriptionEntity, requestMessage, shortPaymentLink);
+        }
         sendSmsWithPaymentRequest(prescriptionEntity, requestMessage, shortPaymentLink);
     }
 
@@ -152,7 +156,7 @@ public class PrescriptionService {
         PrescriptionEntity prescriptionEntity = optionalPrescriptionEntity.get();
         if (updateEntity.getStatus().equals("COMPLETED")) {
             if (!StringUtils.isEmpty(updateEntity.getPrescriptionNumber())) {
-                sendPrescriptionNumber(updateEntity, userEntity.getSmsMessageCompleted());
+                sendPrescriptionNumber(updateEntity, userEntity);
             } else {
                 log.warn("Prescription {} changed to COMPLETED without prescription number filled", prescriptionEntity.getId());
             }
@@ -177,10 +181,12 @@ public class PrescriptionService {
         prescriptionRepository.save(prescriptionEntity);
     }
 
-    private void sendPrescriptionNumber(PrescriptionEntity prescriptionEntity, String messageCompleted) {
-        String prescriptionReadyMessage = String.format(messageCompleted, prescriptionEntity.getPrescriptionNumber());
+    private void sendPrescriptionNumber(PrescriptionEntity prescriptionEntity, UserEntity userEntity) {
+        String prescriptionReadyMessage = String.format(userEntity.getSmsMessageCompleted(), prescriptionEntity.getPrescriptionNumber());
         try {
-            this.emailService.sendSimpleMessage(prescriptionEntity.getEmail(), MAIL_SUBJECT, prescriptionReadyMessage);
+            if(!Objects.equals(userEntity.getEmail(), prescriptionEntity.getEmail())) {
+                this.emailService.sendSimpleMessage(prescriptionEntity.getEmail(), MAIL_SUBJECT, prescriptionReadyMessage);
+            }
         } catch (MessagingException | RuntimeException e) {
             log.error("Email could not be delivered", e);
             prescriptionEntity.addError("Email: " + this.actualDateTime() + " " + e.getMessage());
