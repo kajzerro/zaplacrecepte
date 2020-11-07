@@ -16,4 +16,5 @@ public class LoginResponseDto {
     private String email;
     private String clientType;
     private Integer defaultPrice;
+    private Boolean feeIncluded;
 }

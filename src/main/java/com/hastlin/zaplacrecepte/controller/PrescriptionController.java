@@ -40,7 +40,7 @@ public class PrescriptionController {
 
     @GetMapping(path = "client/{id}")
     PrescriptionDTO getPrescription(@PathVariable String id) {
-        return this.prescriptionMapper.toDto(this.prescriptionService.getPrescription(id));
+        return this.prescriptionMapper.toDto(this.prescriptionService.getPrescriptionWithChangedPrice(id));
     }
 
     @PutMapping(path = "/{id}")

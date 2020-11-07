@@ -69,4 +69,7 @@ public class UserEntity {
     @Column(name = "ACCOUNT_OWNER")
     private String accountOwner;
 
+    @Column(name = "FEE_INCLUDED")
+    private boolean feeIncluded;
+
 }

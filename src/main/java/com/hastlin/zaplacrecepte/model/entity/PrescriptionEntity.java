@@ -71,6 +71,9 @@ public class PrescriptionEntity {
     @Column(name = "PRICE")
     private Integer price;
 
+    @Column(name = "FEE_INCLUDED")
+    private boolean feeIncluded;
+
     @Column(name = "ERRORS")
     @Type(type = "text")
     private String errors;

@@ -20,6 +20,7 @@ public class LoginController {
                 .lastName(userEntity.getLastName())
                 .clientType(userEntity.getClientType())
                 .defaultPrice(userEntity.getDefaultPrice())
+                .feeIncluded(userEntity.isFeeIncluded())
                 .build();
     }
 

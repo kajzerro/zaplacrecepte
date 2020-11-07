@@ -42,6 +42,7 @@ public class PrescriptionMapper {
                 .prescriptionNumber(prescriptionEntity.getPrescriptionNumber())
                 .orderUrl(prescriptionEntity.getOrderUrl())
                 .price(prescriptionEntity.getPrice())
+                .feeIncluded(prescriptionEntity.isFeeIncluded())
                 .build();
     }
 }

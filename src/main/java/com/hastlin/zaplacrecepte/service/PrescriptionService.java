@@ -58,6 +58,7 @@ public class PrescriptionService {
     public void createNewPrescription(PrescriptionEntity prescriptionEntity) {
         UserEntity userEntity = (UserEntity) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         prescriptionEntity.setOwnerId(userEntity.getId());
+        prescriptionEntity.setFeeIncluded(userEntity.isFeeIncluded());
         prescriptionEntity.setStatus(STATUS_NEW);
         prescriptionEntity.setCreateDateTime(actualDateTime());
         if (prescriptionEntity.getPrice() == null || FeatureToggleUtil.isLoggedUserPrescriptionBased()) {
@@ -69,7 +70,7 @@ public class PrescriptionService {
             if (isP24PaymentProvider(userEntity)) {
                 payment = p24PaymentService.createPayment(prescriptionEntity.getEmail(), prescriptionEntity.getPrice());
             } else {
-                payment = bmPaymentService.createPayment(prescriptionEntity.getPrice(), userEntity.getAccountNumber(), userEntity.getAccountOwner(), FeatureToggleUtil.isLoggedUserPrescriptionBased());
+                payment = bmPaymentService.createPayment(prescriptionEntity.getPrice(), prescriptionEntity.isFeeIncluded(), userEntity.getAccountNumber(), userEntity.getAccountOwner(), FeatureToggleUtil.isLoggedUserPrescriptionBased());
             }
             prescriptionEntity.setOrderUrl(payment.getOrderUrl());
             prescriptionEntity.setPaymentToken(payment.getPaymentToken());
@@ -119,13 +120,19 @@ public class PrescriptionService {
         return zonedDateTime;
     }
 
-    public PrescriptionEntity getPrescription(String id) {
+    public PrescriptionEntity getPrescriptionWithChangedPrice(String id) {
         Optional<PrescriptionEntity> optionalPrescriptionEntity = this.prescriptionRepository.findById(id);
 
         if (!optionalPrescriptionEntity.isPresent()) {
             throw new RuntimeException("Prescription not found");
         }
-        return optionalPrescriptionEntity.get();
+
+        PrescriptionEntity prescriptionEntity = optionalPrescriptionEntity.get();
+        if (!prescriptionEntity.isFeeIncluded()) {
+            prescriptionEntity.setPrice(prescriptionEntity.getPrice() + BMPaymentService.FEE);
+        }
+
+        return prescriptionEntity;
     }
 
     public Iterable<PrescriptionEntity> getAllPrescriptions() {

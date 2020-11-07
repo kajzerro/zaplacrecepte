@@ -24,4 +24,5 @@ public class PrescriptionDTO {
     private String prescriptionNumber;
     private String orderUrl;
     private Integer price;
+    private Boolean feeIncluded;
 }
