@@ -1,12 +1,30 @@
 package com.hastlin.zaplacrecepte.service.payment.bm;
 
 import com.hastlin.zaplacrecepte.model.dto.payment.bm.BMStatusChangeRequestDecodedDto;
+import com.hastlin.zaplacrecepte.model.dto.payment.bm.BMStatusChangeRequestDto;
+import com.hastlin.zaplacrecepte.model.entity.PrescriptionEntity;
+import com.hastlin.zaplacrecepte.repository.PrescriptionRepository;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import java.util.Base64;
+import java.util.Optional;
 
+import static org.junit.Assert.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
+
+@RunWith(SpringJUnit4ClassRunner.class)
 public class BMStatusPaymentServiceTest {
+
+    @Mock
+    private PrescriptionRepository prescriptionRepository;
+
+    @InjectMocks
+    BMStatusPaymentService bmStatusPaymentService;
 
     @Test
     public void should_parse_request_from_documentation() {
@@ -233,6 +251,51 @@ public class BMStatusPaymentServiceTest {
         BMStatusPaymentService bmStatusPaymentService = new BMStatusPaymentService();
         bmStatusPaymentService.sharedKey = "51473d84c2c6e0294a6f05457c6e1f13dedf6f68";
         assertTrue(bmStatusPaymentService.isHashInUnparsedCorrect(unparsedRequest));
+    }
+
+    @Test
+    public void should_check_both_amounts() {
+
+        String baseMessage = "PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9InllcyI/Pgo8dHJhbnNhY3Rpb25MaXN0PgogICAgPHNlcnZpY2VJRD4xMDI2NTI8L3NlcnZpY2VJRD4KICAgIDx0cmFuc2FjdGlvbnM+CiAgICAgICAgPHRyYW5zYWN0aW9uPgogICAgICAgICAgICA8b3JkZXJJRD45MDY4OWFmN2EyMzE0ZjkyYThhMTNjMTM1MjkwN2Q4ZDwvb3JkZXJJRD4KICAgICAgICAgICAgPHJlbW90ZUlEPkExRVY4Q0xCNE08L3JlbW90ZUlEPgogICAgICAgICAgICA8YW1vdW50PjMwMC4wMDwvYW1vdW50PgogICAgICAgICAgICA8Y3VycmVuY3k+UExOPC9jdXJyZW5jeT4KICAgICAgICAgICAgPGdhdGV3YXlJRD45NTwvZ2F0ZXdheUlEPgogICAgICAgICAgICA8cGF5bWVudERhdGU+MjAyMDEyMDExNjIyNDM8L3BheW1lbnREYXRlPgogICAgICAgICAgICA8cGF5bWVudFN0YXR1cz5TVUNDRVNTPC9wYXltZW50U3RhdHVzPgogICAgICAgICAgICA8cGF5bWVudFN0YXR1c0RldGFpbHM+QVVUSE9SSVpFRDwvcGF5bWVudFN0YXR1c0RldGFpbHM+CiAgICAgICAgICAgIDxzdGFydEFtb3VudD4yOTcuMDA8L3N0YXJ0QW1vdW50PgogICAgICAgIDwvdHJhbnNhY3Rpb24+CiAgICA8L3RyYW5zYWN0aW9ucz4KICAgIDxoYXNoPmFkYTAyZGMxOTQ1YjEzNjg4MTdjNDM2ODVhMWE3M2I1YzVmYzg2YmQ4NzFiODhjNjMzYTg0OTRmMmI2YmRiYjY8L2hhc2g+CjwvdHJhbnNhY3Rpb25MaXN0Pgo=";
+        String unparsedRequest = new String((Base64.getDecoder().decode(baseMessage.getBytes())));
+        System.out.println(unparsedRequest);
+
+        when(prescriptionRepository.findByPaymentToken(any())).thenReturn(Optional.of(PrescriptionEntity.builder()
+                .id("8326665b-1846-4e35-8186-e9d543383b1e")
+                .paymentToken("90689af7a2314f92a8a13c1352907d8d")
+                .price(300)
+                .build()));
+        bmStatusPaymentService.serviceId = "102652";
+
+        String confirmationMessage = bmStatusPaymentService.changeStatusPayment(BMStatusChangeRequestDto.builder().transactions(baseMessage).build());
+        System.out.println(confirmationMessage);
+        assertFalse(confirmationMessage.contains("NOTCONFIRMED"));
+        assertTrue(confirmationMessage.contains("CONFIRMED"));
+    }
+
+    @Test
+    public void should_check_both_amounts_and_fail_if_not_match() {
+
+        String baseMessage = "PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9InllcyI/Pgo8dHJhbnNhY3Rpb25MaXN0PgogICAgPHNlcnZpY2VJRD4xMDI2NTI8L3NlcnZpY2VJRD4KICAgIDx0cmFuc2FjdGlvbnM+CiAgICAgICAgPHRyYW5zYWN0aW9uPgogICAgICAgICAgICA8b3JkZXJJRD45MDY4OWFmN2EyMzE0ZjkyYThhMTNjMTM1MjkwN2Q4ZDwvb3JkZXJJRD4KICAgICAgICAgICAgPHJlbW90ZUlEPkExRVY4Q0xCNE08L3JlbW90ZUlEPgogICAgICAgICAgICA8YW1vdW50PjMwMC4wMDwvYW1vdW50PgogICAgICAgICAgICA8Y3VycmVuY3k+UExOPC9jdXJyZW5jeT4KICAgICAgICAgICAgPGdhdGV3YXlJRD45NTwvZ2F0ZXdheUlEPgogICAgICAgICAgICA8cGF5bWVudERhdGU+MjAyMDEyMDExNjIyNDM8L3BheW1lbnREYXRlPgogICAgICAgICAgICA8cGF5bWVudFN0YXR1cz5TVUNDRVNTPC9wYXltZW50U3RhdHVzPgogICAgICAgICAgICA8cGF5bWVudFN0YXR1c0RldGFpbHM+QVVUSE9SSVpFRDwvcGF5bWVudFN0YXR1c0RldGFpbHM+CiAgICAgICAgICAgIDxzdGFydEFtb3VudD4yOTcuMDA8L3N0YXJ0QW1vdW50PgogICAgICAgIDwvdHJhbnNhY3Rpb24+CiAgICA8L3RyYW5zYWN0aW9ucz4KICAgIDxoYXNoPmFkYTAyZGMxOTQ1YjEzNjg4MTdjNDM2ODVhMWE3M2I1YzVmYzg2YmQ4NzFiODhjNjMzYTg0OTRmMmI2YmRiYjY8L2hhc2g+CjwvdHJhbnNhY3Rpb25MaXN0Pgo=";
+        String unparsedRequest = new String((Base64.getDecoder().decode(baseMessage.getBytes())));
+        System.out.println(unparsedRequest);
+
+        when(prescriptionRepository.findByPaymentToken(any())).thenReturn(Optional.of(PrescriptionEntity.builder()
+                .id("8326665b-1846-4e35-8186-e9d543383b1e")
+                .paymentToken("90689af7a2314f92a8a13c1352907d8d")
+                .price(299)
+                .build()));
+        bmStatusPaymentService.serviceId = "102652";
+
+        String confirmationMessage = bmStatusPaymentService.changeStatusPayment(BMStatusChangeRequestDto.builder().transactions(baseMessage).build());
+        System.out.println(confirmationMessage);
+        assertTrue(confirmationMessage.contains("NOTCONFIRMED"));
+    }
+
+    @Test
+    public void deodeBase64message() {
+        String baseMessage = "PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9InllcyI/Pgo8dHJhbnNhY3Rpb25MaXN0PgogICAgPHNlcnZpY2VJRD4xMDI2NTI8L3NlcnZpY2VJRD4KICAgIDx0cmFuc2FjdGlvbnM+CiAgICAgICAgPHRyYW5zYWN0aW9uPgogICAgICAgICAgICA8b3JkZXJJRD5jYmJkMzMyN2ExY2Y0ZTE3OGE5ZjM1ZDAyMDZlZmY5OTwvb3JkZXJJRD4KICAgICAgICAgICAgPHJlbW90ZUlEPkE1RzE0NVk3MTg8L3JlbW90ZUlEPgogICAgICAgICAgICA8YW1vdW50PjQuMDA8L2Ftb3VudD4KICAgICAgICAgICAgPGN1cnJlbmN5PlBMTjwvY3VycmVuY3k+CiAgICAgICAgICAgIDxnYXRld2F5SUQ+MzwvZ2F0ZXdheUlEPgogICAgICAgICAgICA8cGF5bWVudERhdGU+MjAyMDExMDMyMjUyNDE8L3BheW1lbnREYXRlPgogICAgICAgICAgICA8cGF5bWVudFN0YXR1cz5TVUNDRVNTPC9wYXltZW50U3RhdHVzPgogICAgICAgICAgICA8cGF5bWVudFN0YXR1c0RldGFpbHM+QVVUSE9SSVpFRDwvcGF5bWVudFN0YXR1c0RldGFpbHM+CiAgICAgICAgICAgIDxzdGFydEFtb3VudD4xLjAwPC9zdGFydEFtb3VudD4KICAgICAgICA8L3RyYW5zYWN0aW9uPgogICAgPC90cmFuc2FjdGlvbnM+CiAgICA8aGFzaD4yM2YwNWZiNTY4MDU4ZjE4OTgzZjFiYjA0YzVjYTY5NjdkZjMxYzhkM2YyYzU1NDllZGVmNmIyZWJmN2Q1ZjJmPC9oYXNoPgo8L3RyYW5zYWN0aW9uTGlzdD4K";
+        System.out.println(new String((Base64.getDecoder().decode(baseMessage.getBytes()))));
     }
 
 }
