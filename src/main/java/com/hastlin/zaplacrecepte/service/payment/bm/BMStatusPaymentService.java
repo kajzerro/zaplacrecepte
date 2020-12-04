@@ -19,7 +19,7 @@ import java.util.regex.Pattern;
 public class BMStatusPaymentService {
 
     @Value("${payment.bm.serviceId}")
-    private String serviceId;
+    String serviceId;
 
     @Value("${payment.bm.sharedKey}")
     String sharedKey;
@@ -74,10 +74,12 @@ public class BMStatusPaymentService {
     }
 
     private boolean contentDoesntMatch(BMStatusChangeRequestDecodedDto decodedDto, Optional<PrescriptionEntity> optionalPrescriptionEntity) {
+        String storedPrice = BMUtils.formatPrice(optionalPrescriptionEntity.get().getPrice());
         return !Objects.equals(serviceId, decodedDto.getServiceId()) ||
                 !Objects.equals("PLN", decodedDto.getCurrency()) ||
                 !optionalPrescriptionEntity.isPresent() ||
-                !Objects.equals(BMUtils.formatPrice(optionalPrescriptionEntity.get().getPrice()), decodedDto.getStartAmount());
+                !(Objects.equals(storedPrice, decodedDto.getAmount()) ||
+                        Objects.equals(storedPrice, decodedDto.getStartAmount()));
     }
 
     String createConfirmationResponse(BMStatusChangeRequestDecodedDto decodedDto, String confirmation) {
